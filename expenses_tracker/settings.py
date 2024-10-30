@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'expenses_tracker.wsgi.application'
 # }
 DATABASES = {
     'default': {
-        "ENGINE": "mysql.connector.django",
+        "ENGINE": "django.db.backends.mysql",
         'NAME': 'classroot_test',
         'USER': 'classroot_testing',
         'PASSWORD': '4Ar$na~_HO+1',
