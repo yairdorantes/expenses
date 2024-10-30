@@ -28,9 +28,11 @@ DEBUG = True
 CORS_ALLOW_ALL_ORIGINS = True
 
 
-ALLOWED_HOSTS = ["expenses-production-a0b7.up.railway.app"]
+ALLOWED_HOSTS = ["*"]
 
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://expenses-production-a0b7.up.railway.app"
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,8 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "corsheaders",
     "expenses",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
