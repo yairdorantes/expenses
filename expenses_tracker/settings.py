@@ -78,10 +78,20 @@ WSGI_APPLICATION = 'expenses_tracker.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        "ENGINE": "django.db.backends.mysql",
+        'NAME': 'classroot_test',
+        'USER': 'classroot_testing',
+        'PASSWORD': '4Ar$na~_HO+1',
+        'HOST': '68.66.229.151',  # Set to your PostgreSQL server's IP if not localhost
+        'PORT': '3306',       # Default PostgreSQL port
     }
 }
 
