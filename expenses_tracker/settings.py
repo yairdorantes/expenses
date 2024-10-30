@@ -90,8 +90,8 @@ DATABASES = {
         'NAME': 'classroot_test',
         'USER': 'classroot_testing',
         'PASSWORD': '4Ar$na~_HO+1',
-        'HOST': '68.66.229.151',  # Set to your PostgreSQL server's IP if not localhost
-        'PORT': '3306',       # Default PostgreSQL port
+        'HOST': '68.66.229.151',  
+        'PORT': '3306',    
     }
 }
 
