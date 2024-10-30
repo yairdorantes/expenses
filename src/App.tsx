@@ -6,8 +6,8 @@ const App = () => {
   return (
     <div className="">
       <ToastContainer />
-      <Summary />
-      {/* <FormExpense /> */}
+      {/* <Summary /> */}
+      <FormExpense />
     </div>
   );
 };

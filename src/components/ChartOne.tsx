@@ -20,7 +20,6 @@ const data = [
 const ChartOne = () => {
   return (
     <div>
-      {" "}
       <ResponsiveContainer width="100%" height={250}>
         <AreaChart data={data}>
           <defs>

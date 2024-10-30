@@ -28,13 +28,13 @@ const Summary = () => {
       <div className="flex justify-center  flex-col items-center">
         <div className="font-semibold">Total balance</div>
         <div className="font-extrabold  font-sans  text-2xl">
-          $<SlotCounter value={remaining.toLocaleString()} />
+          {/* $<SlotCounter value={remaining && remaining} /> */}
         </div>
       </div>
       <div className="bg-white w-fit rounded-md px-3 py-2 mx-auto">
         <div className="font-semibold text-red-500">
           -$
-          <SlotCounter value={spent} />
+          {/* <SlotCounter value={spent && spent} /> */}
         </div>
       </div>
       <ChartOne></ChartOne>
