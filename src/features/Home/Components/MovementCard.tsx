@@ -26,6 +26,7 @@ interface Movement {
   date: string;
   type: string;
   category: string;
+  details: string;
 }
 interface Props {
   movement: Movement;
@@ -105,25 +106,30 @@ function getCategoryColor(categoryNumber: string) {
 
 const MovementCard = ({ movement }: Props) => {
   return (
-    <div className="flex border-t-[1px] border-white  border-opacity-20 p-4 justify-between">
-      <div className="flex gap-2">
-        <div
-          style={{ backgroundColor: getCategoryColor(movement.category) }}
-          className={`w-10 h-10 flex items-center bg-[${getCategoryColor(
-            movement.category
-          )}] justify-center  rounded-full`}
-        >
-          {getCategoryIcon(movement.category)}
+    <div>
+      <div className="flex border-t-[1px] border-white  border-opacity-20 p-4 justify-between">
+        <div className="flex gap-2">
+          <div
+            style={{ backgroundColor: getCategoryColor(movement.category) }}
+            className={`w-10 h-10 flex items-center bg-[${getCategoryColor(
+              movement.category
+            )}] justify-center  rounded-full`}
+          >
+            {getCategoryIcon(movement.category)}
+          </div>
+          <div>
+            <div className="font-bold">
+              {getCategoryName(movement.category)}{" "}
+            </div>
+            <small>{format(new Date(movement.date), "MMM d, yyyy")}</small>
+          </div>
         </div>
-        <div>
-          <div className="font-bold">{getCategoryName(movement.category)} </div>
-          <small>{format(new Date(movement.date), "MMM d, yyyy")}</small>
+        <div className="font-bold flex items-center gap-1">
+          {" "}
+          <FiMinus size={12} /> ${movement.amount}
         </div>
       </div>
-      <div className="font-bold flex items-center gap-1">
-        {" "}
-        <FiMinus size={12} /> ${movement.amount}
-      </div>
+      {/* <div>jajaaj</div> */}
     </div>
   );
 };

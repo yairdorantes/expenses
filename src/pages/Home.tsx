@@ -6,21 +6,33 @@ import SlotCounter from "react-slot-counter";
 import { Progress } from "@mantine/core";
 import { FaCirclePlus } from "react-icons/fa6";
 import { Link } from "react-router-dom";
+import { PieChart } from "recharts";
+import PieChartHome from "../features/Home/Components/PieChartHome";
 
+const budget = 7500;
 const Home = () => {
-  const getExpenses = (category: string, type: string) => {};
   const [data, setData] = useState({ movements: [], spent: "" });
-
+  const [movements, setMovements] = useState([]);
   const getData = () => {
     axios
       .get(`${apiUrl}/api/period/2/10/2024`)
       .then((res) => {
         console.log(res.data);
         setData(res.data);
+        setMovements(res.data.movements);
       })
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  const handleClickPiece = (piece: object) => {
+    const newData = data.movements.filter(
+      (movement) => movement.category === piece.id
+    );
+    // console.log(newData);
+    setMovements(newData);
+    console.log(newData);
   };
 
   useEffect(() => {
@@ -30,11 +42,16 @@ const Home = () => {
   return (
     <div>
       <main className="max-w-lg mx-auto ">
-        <div className="bg-teal-900 p-4  rounded-lg">
+        <div className="bg-teal- p-4  rounded-lg">
           <h4>Total</h4>
           <div className="flex justify-between">
-            <h1 className="font-bold text-3xl">
-              $<SlotCounter value={data.spent.toLocaleString()} />
+            <h1 className="font-bold  flex flex-col">
+              <span className="text-3xl">
+                $<SlotCounter value={(budget - data.spent).toFixed(2)} />
+              </span>
+              <small className="text-red-500">
+                - ${data.spent.toLocaleString()}
+              </small>
             </h1>
             <div>
               <Link to={"/add-expense"}>
@@ -43,15 +60,36 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div>
-          <div>
-            Quincenal Budget $7,500 %{((data.spent / 7500) * 100).toFixed(2)}
+        <div className="p-4">
+          <div className="flex justify-between">
+            <div>
+              <span className="font-bold text-sm">Quincenal Budget</span>{" "}
+              <span className="text-sm font-bold text-gray-400">
+                ${budget.toLocaleString()}
+              </span>{" "}
+            </div>
+            <div>
+              <span className="font-bold text-white">
+                {((data.spent / budget) * 100).toFixed(2)}%
+              </span>
+            </div>
           </div>
-          <Progress radius="md" value={(data.spent / 7500) * 100} />
+          <Progress
+            radius="md"
+            color="teal"
+            value={(data.spent / budget) * 100}
+          />
         </div>
       </main>
+      <div className="flex justify-center">
+        <PieChartHome
+          handleClickPiece={handleClickPiece}
+          movements={data.movements}
+        />{" "}
+      </div>
+
       <div className="max-w-lg h-[500px] overflow-y-auto overflow-hidden mx-auto  mt-5 ">
-        {data.movements.map((movement, i) => (
+        {movements.map((movement, i) => (
           <MovementCard movement={movement} key={i} />
         ))}
       </div>
