@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 const apiUrl = import.meta.env.VITE_API_URL;
 import SlotCounter from "react-slot-counter";
-import ChartOne from "./ChartOne";
+import ChartOne from "../features/Home/Components/ChartOne";
 
 const Summary = () => {
   const [total, setTotal] = useState(0);
