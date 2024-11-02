@@ -87,10 +87,12 @@ class PeriodSummary(View):
         print("remaining:",remaining)
         expenses_data = [
             {
+                "id":expense.id,
                 "amount": expense.amount,
                 "type": expense.type,
                 "category": expense.category,
-                "date": expense.date
+                "date": expense.date,
+                "details": expense.details
             }
             for expense in expenses 
         ]
