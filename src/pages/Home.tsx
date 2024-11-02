@@ -13,6 +13,7 @@ const budget = 7500;
 const Home = () => {
   const [data, setData] = useState({ movements: [], spent: "" });
   const [movements, setMovements] = useState([]);
+  const [activeMovement, setActiveMovement] = useState(0);
   const getData = () => {
     axios
       .get(`${apiUrl}/api/period/2/10/2024`)
@@ -35,6 +36,10 @@ const Home = () => {
     console.log(newData);
   };
 
+  const clickCardMovement = (id: int) => {
+    activeMovement === id ? setActiveMovement(0) : setActiveMovement(id);
+  };
+
   useEffect(() => {
     getData();
   }, []);
@@ -42,7 +47,7 @@ const Home = () => {
   return (
     <div>
       <main className="max-w-lg mx-auto ">
-        <div className="bg-teal- p-4  rounded-lg">
+        <div className=" p-4  rounded-lg">
           <h4>Total</h4>
           <div className="flex justify-between">
             <h1 className="font-bold  flex flex-col">
@@ -90,7 +95,12 @@ const Home = () => {
 
       <div className="max-w-lg h-[500px] overflow-y-auto overflow-hidden mx-auto  mt-5 ">
         {movements.map((movement, i) => (
-          <MovementCard movement={movement} key={i} />
+          <MovementCard
+            onClickCard={clickCardMovement}
+            active={activeMovement}
+            movement={movement}
+            key={i}
+          />
         ))}
       </div>
     </div>

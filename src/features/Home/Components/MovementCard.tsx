@@ -30,6 +30,8 @@ interface Movement {
 }
 interface Props {
   movement: Movement;
+  onClickCard: () => void;
+  active: number;
 }
 
 const CATEGORY_CHOICES = [
@@ -104,9 +106,9 @@ function getCategoryColor(categoryNumber: string) {
   return categoryColors[categoryNumber] || "#000000"; // Default color if not found
 }
 
-const MovementCard = ({ movement }: Props) => {
+const MovementCard = ({ movement, onClickCard, active }: Props) => {
   return (
-    <div>
+    <div className="" onClick={() => onClickCard(movement.id)}>
       <div className="flex border-t-[1px] border-white  border-opacity-20 p-4 justify-between">
         <div className="flex gap-2">
           <div
@@ -129,7 +131,13 @@ const MovementCard = ({ movement }: Props) => {
           <FiMinus size={12} /> ${movement.amount}
         </div>
       </div>
-      {/* <div>jajaaj</div> */}
+      <div
+        className={`text-center  text-sm ${
+          active === movement.id ? "h-auto" : "h-0 overflow-hidden"
+        } transition-all w-[99%]`}
+      >
+        {movement.details}
+      </div>
     </div>
   );
 };
