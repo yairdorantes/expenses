@@ -15,8 +15,12 @@ const Home = () => {
   const [movements, setMovements] = useState([]);
   const [activeMovement, setActiveMovement] = useState(0);
   const getData = () => {
+    const today = new Date();
+    const day = today.getDate();
+    const period = day <= 15 ? 1 : 2;
+    const month = today.getMonth() + 1;
     axios
-      .get(`${apiUrl}/api/period/2/10/2024`)
+      .get(`${apiUrl}/api/period/${period}/${month}/2024`)
       .then((res) => {
         console.log(res.data);
         setData(res.data);
