@@ -14,13 +14,16 @@ const Home = () => {
   const [data, setData] = useState({ movements: [], spent: "" });
   const [movements, setMovements] = useState([]);
   const [activeMovement, setActiveMovement] = useState(0);
+
   const getData = () => {
+    const currentYear = new Date().getFullYear();
+
     const today = new Date();
     const day = today.getDate();
     const period = day <= 15 ? 1 : 2;
     const month = today.getMonth() + 1;
     axios
-      .get(`${apiUrl}/api/period/${period}/${month}/2024`)
+      .get(`${apiUrl}/api/period/${period}/${month}/${currentYear}`)
       .then((res) => {
         console.log(res.data);
         setData(res.data);
