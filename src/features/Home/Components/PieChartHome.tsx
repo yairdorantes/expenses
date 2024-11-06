@@ -38,6 +38,7 @@ const CATEGORY_CHOICES = [
   ["15", "Repayment"],
   ["16", "Paycheck"],
   ["17", "Other"],
+  ["18", "Bicycle"],
 ];
 
 // const movements = [

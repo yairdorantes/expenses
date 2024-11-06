@@ -52,6 +52,7 @@ const CATEGORY_CHOICES = [
   ["15", "Repayment"],
   ["16", "Paycheck"],
   ["17", "Other"],
+  ["18", "Bicycle"],
 ];
 const categoryIcons = {
   "1": <MdHealthAndSafety color="white" />,
@@ -71,6 +72,7 @@ const categoryIcons = {
   "15": <MdMoneyOff color="white" />,
   "16": <MdPayment color="white" />,
   "17": <MdMore color="white" />,
+  "18": <MdDirectionsBike color="white" />,
 };
 
 const categoryColors = {
@@ -91,6 +93,7 @@ const categoryColors = {
   "15": "#FFEB3B", // Repayment (yellow)
   "16": "#8D6E63", // Paycheck (brown)
   "17": "#B0BEC5", // Other (light gray)
+  "18": "#1c7e1f", // Other (light gray)
 };
 
 function getCategoryName(categoryNumber: string) {
