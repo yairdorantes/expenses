@@ -45,7 +45,7 @@ class Expense(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.CharField(max_length=2, choices=CATEGORY_CHOICES)
     type = models.CharField(max_length=2, choices=AMOUNT_TYPE_CHOICES)
-    date = models.DateField()
+    date = models.DateTimeField()
     payment_method = models.CharField(max_length=2, choices=PAYMENT_METHOD_CHOICES)
     details = models.TextField(blank=True, null=True)
     account = models.CharField(max_length=2, choices=ACCOUNT_CHOICES)

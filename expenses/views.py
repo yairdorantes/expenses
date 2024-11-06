@@ -71,7 +71,7 @@ class PeriodSummary(View):
         else:
             return JsonResponse({"error": "Periodo inválido"}, status=400)
 
-        expenses = Expense.objects.filter(date__range=(start_date, end_date))
+        expenses = Expense.objects.filter(date__range=(start_date, end_date)).order_by("-date")
         
         total=15000
         remaining=0
