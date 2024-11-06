@@ -19,6 +19,7 @@ class Expense(models.Model):
         ("15", "repayment"),
         ("16", "paycheck"),
         ("17", "Other"),
+        ("18", "Bicycle"),
     ]
 
     AMOUNT_TYPE_CHOICES = [
