@@ -53,6 +53,7 @@ const FormExpense = () => {
     { value: "15", label: "Repayment" },
     { value: "16", label: "Paycheck" },
     { value: "17", label: "Other" },
+    { value: "18", label: "Bicycle" },
   ];
 
   const amountTypes = [
