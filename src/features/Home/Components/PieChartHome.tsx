@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, Legend, LabelList } from "recharts";
 
 const COLORS = [
   "#FF6F61", // Health (coral)
@@ -19,6 +19,7 @@ const COLORS = [
   "#FFEB3B", // Repayment (yellow)
   "#8D6E63", // Paycheck (brown)
   "#B0BEC5", // Other (light gray)
+  "#1c7e1f", // Other (light gray)
 ];
 const CATEGORY_CHOICES = [
   ["1", "Health"],
@@ -95,6 +96,7 @@ const PieChartHome = ({ movements = [], handleClickPiece }) => {
         outerRadius={120}
         fill="#8884d8"
         dataKey="value"
+        // label={"category"}
         label
         stroke="none"
       >
@@ -102,7 +104,7 @@ const PieChartHome = ({ movements = [], handleClickPiece }) => {
           <Cell
             onClick={() => handleClickPiece(entry)}
             key={`cell-${index}`}
-            fill={COLORS[index % COLORS.length]}
+            fill={COLORS[parseInt(entry.id) - 1]}
           />
         ))}
       </Pie>

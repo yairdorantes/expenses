@@ -3,17 +3,19 @@ import axios from "axios";
 import MovementCard from "../features/Home/Components/MovementCard";
 const apiUrl = import.meta.env.VITE_API_URL;
 import SlotCounter from "react-slot-counter";
-import { Progress } from "@mantine/core";
+import { Button, Progress } from "@mantine/core";
 import { FaCirclePlus } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { PieChart } from "recharts";
 import PieChartHome from "../features/Home/Components/PieChartHome";
+import { BiReset } from "react-icons/bi";
 
 const budget = 7500;
 const Home = () => {
   const [data, setData] = useState({ movements: [], spent: "" });
   const [movements, setMovements] = useState([]);
   const [activeMovement, setActiveMovement] = useState(0);
+  const [pieceSelected, setPieceSelected] = useState({});
 
   const getData = () => {
     const currentYear = new Date().getFullYear();
@@ -25,7 +27,7 @@ const Home = () => {
     axios
       .get(`${apiUrl}/api/period/${period}/${month}/${currentYear}`)
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         setData(res.data);
         setMovements(res.data.movements);
       })
@@ -35,13 +37,14 @@ const Home = () => {
   };
 
   const handleClickPiece = (piece: object) => {
+    setPieceSelected(piece);
     const newData = data.movements.filter(
       (movement) => movement.category === piece.id
     );
     // console.log(newData);
     setMovements(newData);
-    console.log(newData);
   };
+  const resetMovements = () => setMovements(data.movements);
 
   const clickCardMovement = (id: int) => {
     activeMovement === id ? setActiveMovement(0) : setActiveMovement(id);
@@ -93,14 +96,23 @@ const Home = () => {
           />
         </div>
       </main>
-      <div className="flex justify-center">
+      <div className="flex justify-center relative">
         <PieChartHome
           handleClickPiece={handleClickPiece}
           movements={data.movements}
-        />{" "}
+        />
       </div>
 
+      <div className="flex justify-center">
+        <Button onClick={resetMovements}>
+          <BiReset size={24} />
+        </Button>
+      </div>
       <div className="max-w-lg h-[500px] overflow-y-auto overflow-hidden mx-auto  mt-5 ">
+        <h2 className="">
+          Expent percentaje:
+          <span className="font-bold"> {pieceSelected.percentage}</span>
+        </h2>
         {movements.map((movement, i) => (
           <MovementCard
             onClickCard={clickCardMovement}

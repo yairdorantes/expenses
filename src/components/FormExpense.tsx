@@ -175,6 +175,7 @@ const FormExpense = () => {
           onChange={(date) =>
             form.setFieldValue("date", format(date, "yyyy-MM-dd"))
           }
+          defaultValue={new Date()}
           leftSection={<BsFillCalendarDateFill />}
           placeholder="pick a date"
           description="The date when the expense occurred."
