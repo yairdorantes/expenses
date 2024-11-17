@@ -29,7 +29,7 @@ const FormExpense = () => {
       amount: "",
       category: "",
       type: "",
-      date: null,
+      date: format(new Date(), "yyyy-MM-dd"),
       paymentMethod: "",
       details: "",
       account: "",
@@ -89,9 +89,15 @@ const FormExpense = () => {
       });
   };
   return (
-    <form onSubmit={form.onSubmit((values) => console.log(values))}>
+    <form
+      onSubmit={form.onSubmit((values) => {
+        sendData(values);
+        console.log(values);
+      })}
+    >
       <div className="max-w-sm mx-auto  p-4">
         <NumberInput
+          required
           leftSection={<TfiMoney color="green" />}
           label="Amount"
           placeholder="0.00 $"
@@ -103,6 +109,7 @@ const FormExpense = () => {
           {...form.getInputProps("amount")}
         />
         <Select
+          required
           size="md"
           searchable
           leftSection={<MdCategory />}
@@ -121,6 +128,7 @@ const FormExpense = () => {
         <Select
           size="md"
           //   searchable
+          required
           label="Type"
           placeholder="income or expense?"
           leftSection={<FaMoneyBillTrendUp />}
@@ -138,6 +146,7 @@ const FormExpense = () => {
           size="md"
           //   searchable
           label="Payment method"
+          required
           placeholder="payment's method"
           onChange={(value) => {
             form.setFieldValue("paymentMethod", value);
@@ -152,6 +161,7 @@ const FormExpense = () => {
         />{" "}
         <Select
           size="md"
+          required
           //   searchable
           label="Account"
           leftSection={<MdAccountBalance />}
@@ -195,7 +205,11 @@ const FormExpense = () => {
           {...form.getInputProps("details")}
           inputWrapperOrder={["label", "error", "input", "description"]}
         />
-        <Button onClick={() => sendData(form.getValues())}>Add Expense</Button>
+        <div className="mb-2 mt-7">
+          <Button color="green" fullWidth type="submit">
+            Add
+          </Button>
+        </div>
       </div>
     </form>
   );

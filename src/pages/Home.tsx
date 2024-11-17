@@ -19,7 +19,6 @@ const Home = () => {
 
   const getData = () => {
     const currentYear = new Date().getFullYear();
-
     const today = new Date();
     const day = today.getDate();
     const period = day <= 15 ? 1 : 2;
