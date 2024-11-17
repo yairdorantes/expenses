@@ -1,5 +1,6 @@
 import {
   Button,
+  Loader,
   NativeSelect,
   NumberInput,
   Select,
@@ -20,9 +21,11 @@ import { useForm } from "@mantine/form";
 import { format } from "date-fns";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useState } from "react";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const FormExpense = () => {
+  const [loader, setLoader] = useState(false);
   const form = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -76,6 +79,7 @@ const FormExpense = () => {
 
   const sendData = (formData: object) => {
     console.log(formData);
+    setLoader(true);
     axios
       .post(`${apiUrl}/api/expenses`, formData)
       .then((res) => {
@@ -86,7 +90,8 @@ const FormExpense = () => {
       .catch((err) => {
         console.log(err);
         toast.error("something went wrong at sending expense data");
-      });
+      })
+      .finally(() => setLoader(false));
   };
   return (
     <form
@@ -206,8 +211,8 @@ const FormExpense = () => {
           inputWrapperOrder={["label", "error", "input", "description"]}
         />
         <div className="mb-2 mt-7">
-          <Button color="green" fullWidth type="submit">
-            Add
+          <Button disabled={loader} color="green" fullWidth type="submit">
+            {loader ? <Loader /> : "Add"}
           </Button>
         </div>
       </div>
