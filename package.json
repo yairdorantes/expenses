@@ -26,7 +26,8 @@
     "react-router-dom": "^6.27.0",
     "react-slot-counter": "^3.0.1",
     "react-toastify": "^10.0.6",
-    "recharts": "^2.13.0"
+    "recharts": "^2.13.0",
+    "vite-plugin-pwa": "^0.21.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
