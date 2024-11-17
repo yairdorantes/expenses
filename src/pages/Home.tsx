@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { PieChart } from "recharts";
 import PieChartHome from "../features/Home/Components/PieChartHome";
 import { BiReset } from "react-icons/bi";
+import { BsCurrencyDollar } from "react-icons/bs";
 
 const budget = 7500;
 const Home = () => {
@@ -60,8 +61,9 @@ const Home = () => {
           <h4>Total</h4>
           <div className="flex justify-between">
             <h1 className="font-bold  flex flex-col">
-              <span className="text-3xl">
-                $<SlotCounter value={(budget - data.spent).toFixed(2)} />
+              <span className="text-3xl flex items-center">
+                <BsCurrencyDollar />
+                <SlotCounter value={(budget - data.spent).toFixed(2)} />
               </span>
               <small className="text-red-500">
                 - ${data.spent.toLocaleString()}
@@ -78,8 +80,9 @@ const Home = () => {
           <div className="flex justify-between">
             <div>
               <span className="font-bold text-sm">Quincenal Budget</span>{" "}
-              <span className="text-sm font-bold text-gray-400">
-                ${budget.toLocaleString()}
+              <span className="text-sm font-bold flex items-center text-gray-400">
+                <BsCurrencyDollar size={15} />
+                {budget.toLocaleString()}
               </span>{" "}
             </div>
             <div>
