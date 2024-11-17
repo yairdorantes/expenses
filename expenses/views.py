@@ -58,12 +58,12 @@ class PeriodSummary(View):
     # 15-day periods
     def get(self, request, period: int, month: int, year: int):
         if period == 1:
-            # Primera quincena: del 1 al 15
+            # Primera quincena: del 1 al 14
             start_date = date(year, month, 1)
-            end_date = date(year, month, 15)
+            end_date = date(year, month, 14)
         elif period == 2:
-            # Segunda quincena: del 16 al último día del mes
-            start_date = date(year, month, 16)
+            # Segunda quincena: del 15 al último día del mes
+            start_date = date(year, month, 15)
             # Calcular el último día del mes
             next_month = month % 12 + 1
             next_month_start = date(year + (month // 12), next_month, 1)
@@ -77,7 +77,7 @@ class PeriodSummary(View):
         remaining=0
         spent=0
         for money in expenses:
-            if money.type=="1":
+            if money.type=="1" and money.category!="14":
                 spent+=money.amount
             elif money.type=="2" and money.category!="16":
                 spent-=money.amount
