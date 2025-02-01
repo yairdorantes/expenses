@@ -17,6 +17,7 @@ const Home = () => {
   const [movements, setMovements] = useState([]);
   const [activeMovement, setActiveMovement] = useState(0);
   const [pieceSelected, setPieceSelected] = useState({});
+  const [toggleSummary, setToggleSummary] = useState(true);
 
   const getData = () => {
     const currentYear = new Date().getFullYear();
@@ -30,6 +31,9 @@ const Home = () => {
         // console.log(res.data);
         setData(res.data);
         setMovements(res.data.movements);
+        console.log(
+          res.data.remaining.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        );
       })
       .catch((err) => {
         console.log(err);
@@ -49,6 +53,9 @@ const Home = () => {
   const clickCardMovement = (id: int) => {
     activeMovement === id ? setActiveMovement(0) : setActiveMovement(id);
   };
+  const addComma = (number: number) => {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
 
   useEffect(() => {
     getData();
@@ -56,64 +63,76 @@ const Home = () => {
 
   return (
     <div>
-      <main className="max-w-lg mx-auto ">
-        <div className=" p-4  rounded-lg">
+      <main className='max-w-lg mx-auto '>
+        <div className=' p-4  rounded-lg'>
           <h4>Total</h4>
-          <div className="flex justify-between">
-            <h1 className="font-bold  flex flex-col">
-              <span className="text-3xl flex items-center">
+          <div className='flex justify-between'>
+            <h1 className='font-bold  flex flex-col'>
+              <span
+                onClick={() => setToggleSummary(!toggleSummary)}
+                className='text-3xl  flex items-center'
+              >
                 <BsCurrencyDollar />
-                <SlotCounter value={(budget - data.spent).toFixed(2)} />
+                {toggleSummary ? (
+                  <SlotCounter
+                    value={addComma((budget - data.spent).toFixed(2))}
+                  />
+                ) : (
+                  <SlotCounter
+                    containerClassName='text-teal-600'
+                    value={addComma(data.remaining)}
+                  />
+                )}
               </span>
-              <small className="text-red-500">
+              <small className='text-red-500'>
                 - ${data.spent.toLocaleString()}
               </small>
             </h1>
             <div>
               <Link to={"/add-expense"}>
-                <FaCirclePlus color="white" size={35} />
+                <FaCirclePlus color='white' size={35} />
               </Link>
             </div>
           </div>
         </div>
-        <div className="p-4">
-          <div className="flex justify-between">
+        <div className='p-4'>
+          <div className='flex justify-between'>
             <div>
-              <span className="font-bold text-sm">Quincenal Budget</span>{" "}
-              <span className="text-sm font-bold flex items-center text-gray-400">
+              <span className='font-bold text-sm'>Quincenal Budget</span>{" "}
+              <span className='text-sm font-bold flex items-center text-gray-400'>
                 <BsCurrencyDollar size={15} />
                 {budget.toLocaleString()}
               </span>{" "}
             </div>
             <div>
-              <span className="font-bold text-white">
+              <span className='font-bold text-white'>
                 {((data.spent / budget) * 100).toFixed(2)}%
               </span>
             </div>
           </div>
           <Progress
-            radius="md"
-            color="teal"
+            radius='md'
+            color='teal'
             value={(data.spent / budget) * 100}
           />
         </div>
       </main>
-      <div className="flex justify-center relative">
+      <div className='flex justify-center relative'>
         <PieChartHome
           handleClickPiece={handleClickPiece}
           movements={data.movements}
         />
       </div>
 
-      <div className="flex justify-center">
+      <div className='flex justify-center'>
         <Button onClick={resetMovements}>
           <BiReset size={24} />
         </Button>
       </div>
-      <div className="max-w-lg h-[500px] overflow-y-auto overflow-hidden mx-auto  mt-5 ">
-        <h2 className="">
+      <div className='max-w-lg h-[500px] overflow-y-auto overflow-hidden mx-auto  mt-5 '>
+        <h2 className=''>
           Expent percentaje:
-          <span className="font-bold"> {pieceSelected.percentage}</span>
+          <span className='font-bold'> {pieceSelected.percentage}</span>
         </h2>
         {movements.map((movement, i) => (
           <MovementCard

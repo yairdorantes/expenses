@@ -23,21 +23,21 @@ const Summary = () => {
   }, []);
 
   return (
-    <div className="max-w-lg bg-teal-900 mx-auto rounded-lg p-4">
+    <div className='max-w-lg bg-teal-900 mx-auto rounded-lg p-4'>
       {/* <SlotCounter value={total} /> */}
-      <div className="flex justify-center  flex-col items-center">
-        <div className="font-semibold">Total balance</div>
-        <div className="font-extrabold  font-sans  text-2xl">
+      <div className='flex justify-center  flex-col items-center'>
+        <div className='font-semibold'>Total balance</div>
+        <div className='font-extrabold  font-sans  text-2xl'>
           {/* $<SlotCounter value={remaining && remaining} /> */}
         </div>
       </div>
-      <div className="bg-white w-fit rounded-md px-3 py-2 mx-auto">
-        <div className="font-semibold text-red-500">
+      <div className='bg-white w-fit rounded-md px-3 py-2 mx-auto'>
+        <div className='font-semibold text-red-500'>
           -$
           {/* <SlotCounter value={spent && spent} /> */}
         </div>
       </div>
-      <ChartOne></ChartOne>
+      <ChartOne />
     </div>
   );
 };
