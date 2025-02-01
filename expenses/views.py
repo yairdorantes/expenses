@@ -1,12 +1,15 @@
 from datetime import date, timedelta
 import json
 from django.views import View
+
 # Create your views here.
 from django.http import JsonResponse, HttpResponse
 from .models import Expense
+
+
 class Expenses(View):
     def get(self, request):
-        
+
         # expenses = Expense.objects.all()
         # total=21000
         # remaining=0
@@ -20,6 +23,7 @@ class Expenses(View):
         #         total+=money.amount
         # remaining=total-spent
         return JsonResponse({})
+
     def post(self, request):
         jd = json.loads(request.body)
         print(jd)
@@ -36,24 +40,49 @@ class Expenses(View):
         return HttpResponse("okis")
 
 
-
 class Summary(View):
     def get(self, request):
-        expenses = Expense.objects.all()
-        total=21000
-        remaining=0
-        spent=0
+        target_date = date(2025, 1, 22)
+        expenses = Expense.objects.filter(date__gte=target_date)
+
+        total = 63800
+        remaining = 0
+        spent = 0
         for money in expenses:
-            if money.type=="1":
-                spent+=money.amount
-            elif money.type=="2" and money.category!="16":
-                spent-=money.amount
-            elif money.category=="16":
-                total+=money.amount
-        remaining=total-spent
-        return JsonResponse({"total": float(total), "remaining": float(remaining), "spent":float(spent)})
-    
-    
+            if money.type == "1":
+                spent += money.amount
+            elif money.type == "2" and money.category != "16":
+                spent -= money.amount
+            elif money.category == "16":
+                total += money.amount
+        remaining = total - spent
+        return JsonResponse(
+            {
+                "total": float(total),
+                "remaining": float(remaining),
+                "spent": float(spent),
+            }
+        )
+
+
+def get_summary():
+    target_date = date(2025, 1, 22)
+    expenses = Expense.objects.filter(date__gte=target_date)
+
+    total = 63800
+    remaining = 0
+    spent = 0
+    for money in expenses:
+        if money.type == "1":
+            spent += money.amount
+        elif money.type == "2" and money.category != "16":
+            spent -= money.amount
+        elif money.category == "16":
+            total += money.amount
+    remaining = total - spent
+    return remaining
+
+
 class PeriodSummary(View):
     # 15-day periods
     def get(self, request, period: int, month: int, year: int):
@@ -71,31 +100,34 @@ class PeriodSummary(View):
         else:
             return JsonResponse({"error": "Periodo inválido"}, status=400)
 
-        expenses = Expense.objects.filter(date__range=(start_date, end_date)).order_by("-date")
-        
-        total=15000
-        remaining=0
-        spent=0
+        expenses = Expense.objects.filter(date__range=(start_date, end_date)).order_by(
+            "-date"
+        )
+
+        total = 15000
+        remaining = 0
+        spent = 0
         for money in expenses:
-            if money.type=="1" and money.category!="14":
-                spent+=money.amount
-            elif money.type=="2" and money.category!="16":
-                spent-=money.amount
-           
+            if money.type == "1" and money.category != "14":
+                spent += money.amount
+            elif money.type == "2" and money.category != "16":
+                spent -= money.amount
+
         remaining = total - spent
-        print("spent:",spent)
-        print("remaining:",remaining)
+        print("spent:", spent)
+        print("remaining:", remaining)
         expenses_data = [
             {
-                "id":expense.id,
+                "id": expense.id,
                 "amount": expense.amount,
                 "type": expense.type,
                 "category": expense.category,
                 "date": expense.date,
-                "details": expense.details
+                "details": expense.details,
             }
-            for expense in expenses 
+            for expense in expenses
         ]
 
-        return JsonResponse({"spent": spent, "movements": expenses_data})
-    
+        return JsonResponse(
+            {"spent": spent, "movements": expenses_data, "remaining": get_summary()}
+        )
