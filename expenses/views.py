@@ -148,7 +148,6 @@ class PeriodSummary(View):
             return JsonResponse({"error": "Ocurrió un error"}, status=500)
 
 
-# Open and load the JSON file
 # with open("expenses/json.json", "r") as file:
 #     data = json.load(file)
 
