@@ -20,6 +20,7 @@ import {
   MdMore,
 } from "react-icons/md"; // Add your desired icons
 import { format } from "date-fns";
+import { FaChevronDown } from "react-icons/fa";
 
 interface Movement {
   amount: number;
@@ -55,24 +56,24 @@ const CATEGORY_CHOICES = [
   ["18", "Bicycle"],
 ];
 const categoryIcons = {
-  "1": <MdHealthAndSafety color="white" />,
-  "2": <MdFastfood color="white" />,
-  "3": <MdCommute color="white" />,
-  "4": <MdHome color="white" />,
-  "5": <MdLocalGasStation color="white" />,
-  "6": <MdTheaterComedy color="white" />,
-  "7": <MdCheckroom color="white" />,
-  "8": <MdSchool color="white" />,
-  "9": <MdFlight color="white" />,
-  "10": <MdSelfImprovement color="white" />,
-  "11": <MdCardGiftcard color="white" />,
+  "1": <MdHealthAndSafety color='white' />,
+  "2": <MdFastfood color='white' />,
+  "3": <MdCommute color='white' />,
+  "4": <MdHome color='white' />,
+  "5": <MdLocalGasStation color='white' />,
+  "6": <MdTheaterComedy color='white' />,
+  "7": <MdCheckroom color='white' />,
+  "8": <MdSchool color='white' />,
+  "9": <MdFlight color='white' />,
+  "10": <MdSelfImprovement color='white' />,
+  "11": <MdCardGiftcard color='white' />,
   // "12": <MdInsurance color="white" />, // Uncomment if you have an icon for insurance
-  "13": <MdAttachMoney color="white" />,
-  "14": <MdAccountBalance color="white" />,
-  "15": <MdMoneyOff color="white" />,
-  "16": <MdPayment color="white" />,
-  "17": <MdMore color="white" />,
-  "18": <MdDirectionsBike color="white" />,
+  "13": <MdAttachMoney color='white' />,
+  "14": <MdAccountBalance color='white' />,
+  "15": <MdMoneyOff color='white' />,
+  "16": <MdPayment color='white' />,
+  "17": <MdMore color='white' />,
+  "18": <MdDirectionsBike color='white' />,
 };
 
 const categoryColors = {
@@ -111,9 +112,12 @@ function getCategoryColor(categoryNumber: string) {
 
 const MovementCard = ({ movement, onClickCard, active }: Props) => {
   return (
-    <div className="" onClick={() => onClickCard(movement.id)}>
-      <div className="flex border-t-[1px] border-white  border-opacity-20 p-4 justify-between">
-        <div className="flex gap-2">
+    <div
+      className='rounded-lg mb-2  bg-neutral-700'
+      onClick={() => onClickCard(movement.id)}
+    >
+      <div className='flex   border-opacity-20 p-4   justify-between'>
+        <div className='flex gap-2'>
           <div
             style={{ backgroundColor: getCategoryColor(movement.category) }}
             className={`w-10 h-10 flex items-center bg-[${getCategoryColor(
@@ -123,24 +127,25 @@ const MovementCard = ({ movement, onClickCard, active }: Props) => {
             {getCategoryIcon(movement.category)}
           </div>
           <div>
-            <div className="font-bold">
+            <div className='font-bold'>
               {getCategoryName(movement.category)}{" "}
             </div>
             <small>{format(new Date(movement.date), "MMM d, yyyy")}</small>
           </div>
         </div>
-        <div className="font-bold flex items-center gap-1">
-          {" "}
-          <FiMinus size={12} /> ${movement.amount}
+        <div className='flex flex-col justify-between'>
+          <div className='font-extrabold'> -${movement.amount}</div>
+          <div className='flex justify-end'>
+            <FaChevronDown />
+          </div>
         </div>
       </div>
-      <div
-        className={`text-center  text-sm ${
-          active === movement.id ? "h-auto" : "h-0 overflow-hidden"
-        } transition-all w-[99%]`}
-      >
-        {movement.details}
-      </div>
+
+      {active === movement.id && (
+        <div className='text-center text-sm border-t p-2 border-gray-200 border-opacity-50'>
+          {movement.details}
+        </div>
+      )}
     </div>
   );
 };

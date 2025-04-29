@@ -6,6 +6,10 @@ import {
   Select,
   Textarea,
   TextInput,
+  Radio,
+  Group,
+  Text,
+  Flex,
 } from "@mantine/core";
 import { TfiMoney } from "react-icons/tfi";
 import {
@@ -16,68 +20,39 @@ import {
 import { DateInput } from "@mantine/dates";
 import { CiTextAlignLeft } from "react-icons/ci";
 import { BsFillCalendarDateFill } from "react-icons/bs";
-import { FaMoneyBillTrendUp } from "react-icons/fa6";
+import { FaMoneyBillTrendUp, FaPiggyBank } from "react-icons/fa6";
 import { useForm } from "@mantine/form";
 import { format } from "date-fns";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaCreditCard } from "react-icons/fa";
+import { RiCoinsLine } from "react-icons/ri";
+import { GiReceiveMoney } from "react-icons/gi";
+
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const FormExpense = () => {
   const [loader, setLoader] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>("1");
+  const [categories, setCategories] = useState([]);
+  const [amountTypes, setAmountTypes] = useState([]);
+
   const navigate = useNavigate();
   const form = useForm({
-    mode: "uncontrolled",
+    mode: "controlled",
     initialValues: {
       amount: "",
       category: "",
       type: "",
       date: format(new Date(), "yyyy-MM-dd"),
-      paymentMethod: "",
+      paymentMethod: "3",
       details: "",
-      account: "",
+      account: "7",
     },
   });
-  const categories = [
-    { value: "1", label: "Health" },
-    { value: "2", label: "Food" },
-    { value: "3", label: "Transportation" },
-    { value: "4", label: "Housing" },
-    { value: "5", label: "Utilities" },
-    { value: "6", label: "Entertainment" },
-    { value: "7", label: "Clothing" },
-    { value: "8", label: "Education" },
-    { value: "9", label: "Travel" },
-    { value: "10", label: "Personal Care" },
-    { value: "11", label: "Gifts" },
-    { value: "12", label: "Insurance" },
-    { value: "13", label: "Investments" },
-    { value: "14", label: "Lend money" },
-    { value: "15", label: "Repayment" },
-    { value: "16", label: "Paycheck" },
-    { value: "17", label: "Other" },
-    { value: "18", label: "Bicycle" },
-  ];
-
-  const amountTypes = [
-    { value: "1", label: "Expense" },
-    { value: "2", label: "Income" },
-  ];
-  const paymentMethods = [
-    { value: "1", label: "Cash" },
-    { value: "2", label: "Credit Card" },
-    { value: "3", label: "Debit Card" },
-    { value: "4", label: "Bank Transfer" },
-    { value: "8", label: "Check" },
-  ];
-  const accounts = [
-    { value: "1", label: "Checking Account" },
-    { value: "2", label: "Savings Account" },
-    { value: "3", label: "Credit Account" },
-    { value: "5", label: "Cash on Hand" },
-  ];
 
   const sendData = (formData: object) => {
     console.log(formData);
@@ -96,6 +71,20 @@ const FormExpense = () => {
       })
       .finally(() => setLoader(false));
   };
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/api/form`);
+        console.log(response.data);
+        setCategories(response.data.categories);
+        setAmountTypes(response.data.types);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchInitialData();
+  }, []);
 
   return (
     <form
@@ -136,7 +125,7 @@ const FormExpense = () => {
         />{" "}
         <Select
           size='md'
-          //   searchable
+          // searchable
           required
           label='Type'
           placeholder='income or expense?'
@@ -151,7 +140,7 @@ const FormExpense = () => {
           //   key={form.key("category")}
           //   {...form.getInputProps("category")}
         />
-        <Select
+        {/* <Select
           size='md'
           //   searchable
           label='Payment method'
@@ -167,24 +156,117 @@ const FormExpense = () => {
           inputWrapperOrder={["label", "error", "input", "description"]}
           //   key={form.key("category")}
           //   {...form.getInputProps("category")}
-        />{" "}
-        <Select
+        />{" "} */}
+        <Radio.Group
+          my={5}
+          value={paymentMethod}
+          onChange={(value) => form.setFieldValue("paymentMethod", value)}
+          label='Payment Method'
           size='md'
-          required
-          //   searchable
-          label='Account'
-          leftSection={<MdAccountBalance />}
+          //   description='Choose a package that you will need in your application'
+        >
+          <Flex direction='row' gap='md'>
+            <Radio.Card
+              radius='md'
+              value='3'
+              style={{
+                border:
+                  form.values.paymentMethod === "3"
+                    ? "1px solid #19a130"
+                    : "1px solid #E2E8F0 ",
+                padding: "10px",
+                opacity: form.values.paymentMethod === "3" ? 1 : 0.5,
+              }}
+            >
+              <Group wrap='nowrap' align='flex-center'>
+                <Flex align='center' gap='xs'>
+                  <div className='text-red-500'>
+                    <FaCreditCard />
+                  </div>
+                  <Text>Debit card</Text>
+                </Flex>
+              </Group>
+            </Radio.Card>
+
+            <Radio.Card
+              radius='md'
+              value='1'
+              style={{
+                border:
+                  form.values.paymentMethod === "1"
+                    ? "1px solid #19a130"
+                    : "1px solid #E2E8F0 ",
+                padding: "10px",
+                opacity: form.values.paymentMethod === "1" ? 1 : 0.5,
+              }}
+            >
+              <Group wrap='nowrap' align='flex-center'>
+                <Flex align='center' gap='xs'>
+                  <div className='text-yellow-500'>
+                    <RiCoinsLine />
+                  </div>
+                  <Text>Cash</Text>
+                </Flex>
+              </Group>
+            </Radio.Card>
+          </Flex>
+        </Radio.Group>
+        <Radio.Group
+          my={5}
+          value={paymentMethod}
           onChange={(value) => {
             form.setFieldValue("account", value);
           }}
-          placeholder='select the account'
-          //   description="expense amount"
-          description="select the amount's origin account "
-          data={accounts}
-          inputWrapperOrder={["label", "error", "input", "description"]}
-          //   key={form.key("category")}
-          //   {...form.getInputProps("category")}
-        />
+          label='Account'
+          size='md'
+          //   description='Choose a package that you will need in your application'
+        >
+          <Flex direction='row' gap='md'>
+            <Radio.Card
+              radius='md'
+              value='7'
+              style={{
+                border:
+                  form.values.account === "7"
+                    ? "1px solid #19a130"
+                    : "1px solid #E2E8F0 ",
+                padding: "10px",
+                opacity: form.values.account === "7" ? 1 : 0.5,
+              }}
+            >
+              <Group wrap='nowrap' align='flex-center'>
+                <Flex align='center' gap='xs'>
+                  <div className='text-red-500'>
+                    <GiReceiveMoney color='lightblue' />
+                  </div>
+                  <Text>Quincenal</Text>
+                </Flex>
+              </Group>
+            </Radio.Card>
+
+            <Radio.Card
+              radius='md'
+              value='6'
+              style={{
+                border:
+                  form.values.account === "6"
+                    ? "1px solid #19a130"
+                    : "1px solid #E2E8F0 ",
+                padding: "10px",
+                opacity: form.values.account === "6" ? 1 : 0.5,
+              }}
+            >
+              <Group wrap='nowrap' align='flex-center'>
+                <Flex align='center' gap='xs'>
+                  <div className='text-yellow-500'>
+                    <FaPiggyBank color='green' />
+                  </div>
+                  <Text>Savings</Text>
+                </Flex>
+              </Group>
+            </Radio.Card>
+          </Flex>
+        </Radio.Group>
         <DateInput
           size='md'
           //   value={value}

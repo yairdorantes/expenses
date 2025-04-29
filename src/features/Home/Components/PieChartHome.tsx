@@ -1,5 +1,13 @@
-import { useEffect } from "react";
-import { PieChart, Pie, Cell, Tooltip, Legend, LabelList } from "recharts";
+import { useEffect, useState } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  LabelList,
+  Label,
+} from "recharts";
 
 const COLORS = [
   "#FF6F61", // Health (coral)
@@ -50,7 +58,9 @@ const CATEGORY_CHOICES = [
 //   { amount: "1500.00", type: "1", category: "14", date: "2024-10-19" },
 // ];
 
-const PieChartHome = ({ movements = [], handleClickPiece }) => {
+const PieChartHome = ({ movements = [], handleClickPiece, reset }) => {
+  const [sliceSelected, setSliceSelected] = useState(null);
+  const [categories, setCategories] = useState([]);
   function getCategoryDataWithPercentage(movements) {
     const categoryTotals = {};
 
@@ -85,24 +95,69 @@ const PieChartHome = ({ movements = [], handleClickPiece }) => {
     return data;
   }
 
-  useEffect(() => {}, [movements]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/form`
+        );
+        const data = await response.json();
+        setCategories(data.categories);
+        console.log(data.categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <PieChart width={400} height={400}>
       <Pie
         data={getCategoryDataWithPercentage(movements)}
-        cx="50%"
-        cy="50%"
+        cx='50%'
+        cy='50%'
+        innerRadius={80}
         outerRadius={120}
-        fill="#8884d8"
-        dataKey="value"
+        fill='#8884d8'
+        dataKey='value'
         // label={"category"}
         label
-        stroke="none"
+        stroke='none'
       >
+        <Label
+          position='center'
+          content={({ viewBox }) => {
+            const { cx, cy } = viewBox; // Get center coordinates
+            return (
+              <text
+                x={cx}
+                y={cy}
+                fill='#fff'
+                textAnchor='middle'
+                dominantBaseline='middle'
+                fontSize='12px'
+                // fontWeight='bold'
+              >
+                <tspan x={cx} dy='-1.9em'>
+                  {sliceSelected && "Spent"}
+                </tspan>
+                <tspan fontWeight={"bold"} fontSize={24} x={cx} dy='1.2em'>
+                  {sliceSelected && sliceSelected.percentage}
+                </tspan>
+              </text>
+            );
+          }}
+        />
         {getCategoryDataWithPercentage(movements).map((entry, index) => (
           <Cell
-            onClick={() => handleClickPiece(entry)}
+            onClick={() => {
+              console.log(entry);
+              handleClickPiece(entry);
+              setSliceSelected(entry);
+              sliceSelected.id == entry.id && reset();
+            }}
             key={`cell-${index}`}
             fill={COLORS[parseInt(entry.id) - 1]}
           />

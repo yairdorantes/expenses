@@ -10,6 +10,9 @@ import { PieChart } from "recharts";
 import PieChartHome from "../features/Home/Components/PieChartHome";
 import { BiReset } from "react-icons/bi";
 import { BsCurrencyDollar } from "react-icons/bs";
+import { toast } from "react-toastify";
+import Drawer from "../components/ui/MenuDrawer";
+import MenuDrawer from "../components/ui/MenuDrawer";
 
 const budget = 7500;
 const Home = () => {
@@ -34,6 +37,7 @@ const Home = () => {
         console.log(
           res.data.remaining.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
+        console.log(res.data, "beeeyeyeyeeyy");
       })
       .catch((err) => {
         console.log(err);
@@ -59,18 +63,30 @@ const Home = () => {
 
   useEffect(() => {
     getData();
+    axios
+      .post(`${apiUrl}/api/recurrent_txs`)
+      .then((res) => {
+        console.log(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error(
+          "something went wrong at processing recurrent transactions"
+        );
+      });
   }, []);
 
   return (
     <div>
-      <main className='max-w-lg mx-auto '>
-        <div className=' p-4  rounded-lg'>
+      <MenuDrawer></MenuDrawer>
+      <main className='max-w-lg mx-auto p-4 border border-gray-400 rounded-lg mb-5'>
+        <div className=''>
           <h4>Total</h4>
           <div className='flex justify-between'>
-            <h1 className='font-bold  flex flex-col'>
+            <h1 className='font-bold  flex items-end gap-2'>
               <span
                 onClick={() => setToggleSummary(!toggleSummary)}
-                className='text-3xl  flex items-center'
+                className='text-3xl text-white  font-extrabold flex items-center'
               >
                 <BsCurrencyDollar />
                 {toggleSummary ? (
@@ -79,30 +95,26 @@ const Home = () => {
                   />
                 ) : (
                   <SlotCounter
-                    containerClassName='text-teal-600'
-                    value={addComma(data.remaining)}
+                    containerClassName='text-teal-500'
+                    value={addComma(data.remaining.toFixed(2))}
                   />
                 )}
               </span>
-              <small className='text-red-500'>
+              <small className='text-red-500 text-sm'>
                 - ${data.spent.toLocaleString()}
               </small>
             </h1>
-            <div>
+            {/* <div>
               <Link to={"/add-expense"}>
                 <FaCirclePlus color='white' size={35} />
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
-        <div className='p-4'>
+        <div className=''>
           <div className='flex justify-between'>
             <div>
-              <span className='font-bold text-sm'>Quincenal Budget</span>{" "}
-              <span className='text-sm font-bold flex items-center text-gray-400'>
-                <BsCurrencyDollar size={15} />
-                {budget.toLocaleString()}
-              </span>{" "}
+              <span className='font-bold  text-sm'>Quincenal Budget</span>{" "}
             </div>
             <div>
               <span className='font-bold text-white'>
@@ -110,30 +122,30 @@ const Home = () => {
               </span>
             </div>
           </div>
-          <Progress
-            radius='md'
-            color='teal'
-            value={(data.spent / budget) * 100}
-          />
+        </div>
+        <div className='flex items-center gap-2'>
+          <div className='text-sm font-bold  flex items-center text-yellow-100'>
+            <BsCurrencyDollar size={15} />
+            {budget.toLocaleString()}
+          </div>
+          <div className=' w-[90%] '>
+            <Progress
+              radius='md'
+              color='green'
+              value={(data.spent / budget) * 100}
+            />
+          </div>
         </div>
       </main>
-      <div className='flex justify-center relative'>
+      <div className='lg:max-w-lg rounded-lg flex justify-center mx-auto  border border-gray-400 '>
         <PieChartHome
           handleClickPiece={handleClickPiece}
           movements={data.movements}
+          reset={resetMovements}
         />
       </div>
 
-      <div className='flex justify-center'>
-        <Button onClick={resetMovements}>
-          <BiReset size={24} />
-        </Button>
-      </div>
-      <div className='max-w-lg h-[500px] overflow-y-auto overflow-hidden mx-auto  mt-5 '>
-        <h2 className=''>
-          Expent percentaje:
-          <span className='font-bold'> {pieceSelected.percentage}</span>
-        </h2>
+      <div className='max-w-lg h-fit max-h-[500px] overflow-y-auto overflow-hidden mx-auto border border-gray-400 rounded-lg px-2 pt-2  mt-5 '>
         {movements.map((movement, i) => (
           <MovementCard
             onClickCard={clickCardMovement}
