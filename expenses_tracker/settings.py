@@ -33,7 +33,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["https://expenses-production-a0b7.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://expenses-production-a0b7.up.railway.app",
+    "https://expenses.yairserver.uk",
+]
 # Application definition
 
 INSTALLED_APPS = [
