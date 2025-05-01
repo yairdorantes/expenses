@@ -121,7 +121,7 @@ const MovementCard = ({ movement, onClickCard, active }: Props) => {
           <div
             style={{ backgroundColor: getCategoryColor(movement.category) }}
             className={`w-10 h-10 flex items-center bg-[${getCategoryColor(
-              movement.category
+              movement.category.id
             )}] justify-center  rounded-full`}
           >
             {getCategoryIcon(movement.category)}

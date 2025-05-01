@@ -3,16 +3,12 @@ import axios from "axios";
 import MovementCard from "../features/Home/Components/MovementCard";
 const apiUrl = import.meta.env.VITE_API_URL;
 import SlotCounter from "react-slot-counter";
-import { Button, Progress } from "@mantine/core";
+import { Progress } from "@mantine/core";
 import { FaCirclePlus } from "react-icons/fa6";
 import { Link } from "react-router-dom";
-import { PieChart } from "recharts";
 import PieChartHome from "../features/Home/Components/PieChartHome";
-import { BiReset } from "react-icons/bi";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
-import Drawer from "../components/ui/MenuDrawer";
-import MenuDrawer from "../components/ui/MenuDrawer";
 
 const budget = 7500;
 const Home = () => {
@@ -34,10 +30,8 @@ const Home = () => {
         // console.log(res.data);
         setData(res.data);
         setMovements(res.data.movements);
-        console.log(
-          res.data.remaining.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        );
-        console.log(res.data, "beeeyeyeyeeyy");
+
+        console.log("heree", res.data.remaining);
       })
       .catch((err) => {
         console.log(err);
