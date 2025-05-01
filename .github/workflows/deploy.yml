@@ -13,4 +13,4 @@ jobs:
         run: |
           curl -X POST https://webhook.yairserver.uk/deploy \
             -H "Content-Type: application/json" \
-            -d '{"target_path": "/home/yair/DEV/Expenses/back/expenses-back/deploy.sh"}'
+            -d '{"target_path": "/home/yair/projects/expenses/expenses/deploy.sh"}'
