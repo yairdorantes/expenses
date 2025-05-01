@@ -78,7 +78,7 @@ const Home = () => {
 
   return (
     <div>
-      <MenuDrawer></MenuDrawer>
+      {/* <MenuDrawer></MenuDrawer> */}
       <main className='max-w-lg mx-auto p-4 border border-gray-400 rounded-lg mb-5'>
         <div className=''>
           <h4>Total</h4>
@@ -104,11 +104,11 @@ const Home = () => {
                 - ${data.spent.toLocaleString()}
               </small>
             </h1>
-            {/* <div>
+            <div>
               <Link to={"/add-expense"}>
                 <FaCirclePlus color='white' size={35} />
               </Link>
-            </div> */}
+            </div>
           </div>
         </div>
         <div className=''>
