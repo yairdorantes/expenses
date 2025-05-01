@@ -3,7 +3,7 @@
 
 echo "Deploying expenses backend..."
 
-cd /home/yair/DEV/Expenses/back/expenses-back/
+cd /home/yair/projects/expenses/expenses
 
 git pull origin back
 docker rm -f expenses_back || true
