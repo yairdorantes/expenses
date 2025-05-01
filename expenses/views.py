@@ -52,10 +52,10 @@ class Form(View):
 
 class Summary(View):
     def get(self, request):
-        target_date = date(2025, 2, 28)
+        target_date = date(2025, 5, 1)
         expenses = Expense.objects.filter(date__gte=target_date)
 
-        total = 73130
+        total = 71948
         remaining = 0
         spent = 0
         for money in expenses:
@@ -76,20 +76,22 @@ class Summary(View):
 
 
 def get_summary():
-    target_date = date(2025, 3, 1)
+    target_date = date(2025, 5, 1)
     expenses = Expense.objects.filter(date__gte=target_date)
 
-    total = 73130
+    total = 71948
     remaining = 0
     spent = 0
     for money in expenses:
-        if money.type == "1":
+        print("kakakakak", money.category.id)
+        if money.type.id == 1:
             spent += money.amount
-        elif money.type == "2" and money.category != "16":
+        elif money.type.id == 2 and money.category.id != 16:
             spent -= money.amount
-        elif money.category == "16":
+        elif money.category.id == 16:
             total += money.amount
     remaining = total - spent
+
     return remaining
 
 
@@ -140,7 +142,11 @@ class PeriodSummary(View):
             ]
 
             return JsonResponse(
-                {"spent": spent, "movements": expenses_data, "remaining": get_summary()}
+                {
+                    "spent": float(spent),
+                    "movements": expenses_data,
+                    "remaining": float(get_summary()),
+                }
             )
         except Exception as e:
             print("Error:", e)
@@ -307,7 +313,9 @@ def process_recurring_transactions():
                             transaction.save()
                             break
             else:
-                print(f"Expense for {transaction.next_date} already recorded.")
+                print(
+                    f"Expense for {transaction.details,"next date: ",transaction.next_date} already recorded."
+                )
     except Exception as e:
         print("Error processing recurring transactions:", e)
         traceback.print_exc()
