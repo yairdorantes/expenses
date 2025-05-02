@@ -111,6 +111,14 @@ const PieChartHome = ({ movements = [], handleClickPiece, reset }) => {
 
     fetchCategories();
   }, []);
+  useEffect(() => {
+    if (movements.length > 0) {
+      const maxSpentObj = getCategoryDataWithPercentage(movements).reduce(
+        (max, item) => (item.value > max.value ? item : max)
+      );
+      setSliceSelected(maxSpentObj);
+    }
+  }, [movements]);
 
   return (
     <PieChart width={400} height={400}>
@@ -141,7 +149,7 @@ const PieChartHome = ({ movements = [], handleClickPiece, reset }) => {
                 // fontWeight='bold'
               >
                 <tspan x={cx} dy='-1.9em'>
-                  {sliceSelected && "Spent"}
+                  {sliceSelected && `% Spent by ${sliceSelected.name}`}
                 </tspan>
                 <tspan fontWeight={"bold"} fontSize={24} x={cx} dy='1.2em'>
                   {sliceSelected && sliceSelected.percentage}
