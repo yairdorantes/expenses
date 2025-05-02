@@ -1,13 +1,16 @@
 #!/bin/bash
 
+DOCKER_IMAGE_NAME="expenses_back"
+DOCKER_CONTAINER_NAME="expenses_back"
+DOCKER_PORT="8000"
+GIT_BRANCH="back"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Deploying expenses backend..."
-
-cd /home/yair/projects/expenses/expenses
-
-git pull origin back
-docker build -t expenses_back .
-docker rm -f expenses_back || true
-docker run -d -p 8000:8000 --restart unless-stopped --name expenses_back expenses_back
+cd $SCRIPT_DIR
+git pull origin $GIT_BRANCH
+docker build -t $DOCKER_IMAGE_NAME .
+docker rm -f $DOCKER_CONTAINER_NAME || true
+docker run -d -p $DOCKER_PORT:$DOCKER_PORT --restart unless-stopped --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME
 
 echo "Deploy done! :)"
