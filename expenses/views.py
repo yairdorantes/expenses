@@ -83,7 +83,7 @@ def get_summary():
     remaining = 0
     spent = 0
     for money in expenses:
-        print("kakakakak", money.category.id)
+
         if money.type.id == 1:
             spent += money.amount
         elif money.type.id == 2 and money.category.id != 16:
@@ -123,8 +123,6 @@ class PeriodSummary(View):
             for money in expenses:
                 if money.type.id == 1 and money.category.id != 14:
                     spent += money.amount
-                elif money.type.id == 2 and money.category.id != 16:
-                    spent -= money.amount
 
             remaining = total - spent
             print("spent:", spent)
