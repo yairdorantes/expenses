@@ -14,3 +14,5 @@ docker rm -f $DOCKER_CONTAINER_NAME || true
 docker run -d -p $DOCKER_PORT:$DOCKER_PORT --restart unless-stopped --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME
 
 echo "Deploy done! :)"
+
+# k
