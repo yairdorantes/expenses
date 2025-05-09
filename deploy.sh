@@ -1,4 +1,8 @@
 #!/bin/bash
+set -e
+source .env
+
+./wait-for-it.sh $DB_HOST:3306  --strict
 
 DOCKER_IMAGE_NAME="expenses_back"
 DOCKER_CONTAINER_NAME="expenses_back"
