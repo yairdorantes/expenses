@@ -73,3 +73,6 @@ class RecurringTransaction(models.Model):
 
     def __str__(self):
         return f"  {self.frequency} | {self.next_date} | {self.end_date} |  {self.details} "
+
+
+# l
