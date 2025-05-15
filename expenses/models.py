@@ -75,4 +75,4 @@ class RecurringTransaction(models.Model):
         return f"  {self.frequency} | {self.next_date} | {self.end_date} |  {self.details} "
 
 
-# l
+#
