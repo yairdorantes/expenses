@@ -72,7 +72,7 @@ class RecurringTransaction(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"  {self.frequency} | {self.next_date} -> | {self.end_date} |  {self.details} "
+        return f"  {self.frequency} | {self.next_date} -> {self.end_date} |  {self.details} "
 
 
 #
