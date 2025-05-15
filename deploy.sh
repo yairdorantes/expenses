@@ -2,16 +2,18 @@
 set -e
 source .env
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd $SCRIPT_DIR
+
 ./wait-for-it.sh $DB_HOST:3306  --strict
 
 DOCKER_IMAGE_NAME="expenses_back"
 DOCKER_CONTAINER_NAME="expenses_back"
 DOCKER_PORT="8000"
 GIT_BRANCH="back"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Deploying expenses backend..."
-cd $SCRIPT_DIR
+
 git pull origin $GIT_BRANCH
 docker build -t $DOCKER_IMAGE_NAME .
 docker rm -f $DOCKER_CONTAINER_NAME || true
