@@ -23,5 +23,5 @@ EXPOSE 8000
 
 RUN chmod +x /app/wait-for-it.sh
 
-CMD ["sh", "-c", "/app/wait-for-it.sh && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "/app/wait-for-it.sh $DB_HOST:3306 -- python manage.py runserver 0.0.0.0:8000"]
 # nice
