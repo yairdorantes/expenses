@@ -19,9 +19,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 8004
 
 RUN chmod +x /app/wait-for-it.sh
 
-CMD ["sh", "-c", "/app/wait-for-it.sh $DB_HOST:3306 -- python manage.py runserver 0.0.0.0:8000"]
-# nic
+CMD ["sh", "-c", "/app/wait-for-it.sh 192.168.1.9:3306 -- python manage.py runserver 0.0.0.0:8004"]

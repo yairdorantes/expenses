@@ -9,7 +9,7 @@ cd $SCRIPT_DIR
 
 DOCKER_IMAGE_NAME="expenses_back"
 DOCKER_CONTAINER_NAME="expenses_back"
-DOCKER_PORT="8000"
+DOCKER_PORT="8004"
 GIT_BRANCH="back"
 
 echo "Deploying expenses backend..."
