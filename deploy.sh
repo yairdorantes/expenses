@@ -5,7 +5,7 @@ source .env
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd $SCRIPT_DIR
 
-./wait-for-it.sh $DB_HOST:3306  --strict
+# ./wait-for-it.sh $DB_HOST:3306  --strict
 
 DOCKER_IMAGE_NAME="expenses_back"
 DOCKER_CONTAINER_NAME="expenses_back"
