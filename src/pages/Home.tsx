@@ -4,12 +4,12 @@ import MovementCard from "../features/Home/Components/MovementCard";
 const apiUrl = import.meta.env.VITE_API_URL;
 import SlotCounter from "react-slot-counter";
 import { Progress } from "@mantine/core";
-import { FaCirclePlus } from "react-icons/fa6";
+import { FaCirclePlus, FaMinus, FaPlus } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import PieChartHome from "../features/Home/Components/PieChartHome";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
-
+import { IoWalletOutline } from "react-icons/io5";
 const budget = 7500;
 const Home = () => {
   const [data, setData] = useState({ movements: [], spent: "" });
@@ -31,7 +31,7 @@ const Home = () => {
         setData(res.data);
         setMovements(res.data.movements);
 
-        console.log("heree", res.data.remaining);
+        console.log(res.data.previous_remaining);
       })
       .catch((err) => {
         console.log(err);
@@ -53,6 +53,14 @@ const Home = () => {
   };
   const addComma = (number: number) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const getBarColor = (percentageSpent) => {
+    if (percentageSpent <= 50) return "green";
+    if (percentageSpent > 50 && percentageSpent <= 75) return "yellow";
+    if (percentageSpent > 75 && percentageSpent <= 90) return "orange";
+    if (percentageSpent > 90 && percentageSpent <= 100) return "red";
+    return "darkred"; // optional: for values over 100%
   };
 
   useEffect(() => {
@@ -125,9 +133,28 @@ const Home = () => {
           <div className=' w-[90%] '>
             <Progress
               radius='md'
-              color='green'
+              color={getBarColor((data.spent / budget) * 100)}
               value={(data.spent / budget) * 100}
             />
+          </div>
+        </div>
+        <div className='mt-2 '>
+          <div className='w-full mx-auto border border-gray-400'></div>
+          <div className='flex items-center mt-2 justify-between'>
+            <div className='text-sm flex gap-2 items-center'>
+              <IoWalletOutline size={20} color='lightgreen' /> Previous
+              remaining
+            </div>
+            <div
+              className={`${
+                data.previous_balance > 0 ? "text-green-500" : "text-red-500"
+              } font-bold text-lg flex items-center`}
+            >
+              {data.previous_balance > 0 ? <FaPlus /> : <FaMinus size={10} />}
+              <BsCurrencyDollar size={15} />
+              {data.previous_balance &&
+                addComma(Math.abs(data.previous_balance).toFixed(2))}
+            </div>
           </div>
         </div>
       </main>
