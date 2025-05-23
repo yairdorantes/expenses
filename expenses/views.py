@@ -8,6 +8,12 @@ from django.http import JsonResponse, HttpResponse
 from .models import Expense, Category, Method, Account, Type, RecurringTransaction
 from django.utils import timezone
 import calendar
+from calendar import monthrange
+
+# if money.type.id == 1 and money.category.id != 14:
+EXPENSE_TRANSACTION_ID = 1  # THIS IS FOR EXPENSES
+LEND_MONEY_CATEGORY_ID = 14
+FORTNIGHTLY_BUDGET = 7500
 
 
 class Expenses(View):
@@ -95,6 +101,28 @@ def get_summary():
     return remaining
 
 
+def get_previous_period(year, month, period):
+    if period == 1:
+        # Go to second half of previous month
+        if month == 1:
+            prev_year = year - 1
+            prev_month = 12
+        else:
+            prev_year = year
+            prev_month = month - 1
+        start_date = date(prev_year, prev_month, 15)
+        last_day = monthrange(prev_year, prev_month)[1]
+        end_date = date(prev_year, prev_month, last_day)
+    elif period == 2:
+        # Go to first half of current month
+        start_date = date(year, month, 1)
+        end_date = date(year, month, 14)
+    else:
+        return None, None
+
+    return start_date, end_date
+
+
 class PeriodSummary(View):
     # 15-day periods
     def get(self, request, period: int, month: int, year: int):
@@ -138,14 +166,27 @@ class PeriodSummary(View):
                 }
                 for expense in expenses
             ]
-
+            prev_start, prev_end = get_previous_period(year, month, period)
+            # --------------------------------------------------------------
+            # Fetch previous period's expenses
+            prev_expenses = Expense.objects.filter(date__range=(prev_start, prev_end))
+            prev_spent = 0
+            for money in prev_expenses:
+                if (
+                    money.type.id == EXPENSE_TRANSACTION_ID
+                    and money.category.id != LEND_MONEY_CATEGORY_ID
+                ):
+                    prev_spent += money.amount
+            #   --------------------------------------------------
             return JsonResponse(
                 {
                     "spent": float(spent),
                     "movements": expenses_data,
                     "remaining": float(get_summary()),
+                    "previous_balance": float(FORTNIGHTLY_BUDGET - prev_spent),
                 }
             )
+
         except Exception as e:
             print("Error:", e)
             traceback.print_exc()

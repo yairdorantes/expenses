@@ -38,8 +38,8 @@ class Expense(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     date = models.DateTimeField()
     details = models.TextField(blank=True, null=True)
-    # created_at = models.DateTimeField(auto_now_add=True)
-    # updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     def __str__(self):
         return f"{self.type.name} | {self.amount}$ | {self.category.name} | {self.account.name} | {self.payment_method.name} | {self.date}"
