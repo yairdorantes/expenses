@@ -14,6 +14,7 @@ from calendar import monthrange
 EXPENSE_TRANSACTION_ID = 1  # THIS IS FOR EXPENSES
 LEND_MONEY_CATEGORY_ID = 14
 FORTNIGHTLY_BUDGET = 7500
+TOTAL_SAVINGS = 70928
 
 
 class Expenses(View):
@@ -82,10 +83,10 @@ class Summary(View):
 
 
 def get_summary():
-    target_date = date(2025, 5, 1)
+    target_date = date(2025, 5, 24)
     expenses = Expense.objects.filter(date__gte=target_date)
 
-    total = 71948
+    total = TOTAL_SAVINGS
     remaining = 0
     spent = 0
     for money in expenses:
