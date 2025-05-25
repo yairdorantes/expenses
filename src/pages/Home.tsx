@@ -3,13 +3,14 @@ import axios from "axios";
 import MovementCard from "../features/Home/Components/MovementCard";
 const apiUrl = import.meta.env.VITE_API_URL;
 import SlotCounter from "react-slot-counter";
-import { Progress } from "@mantine/core";
+import { ActionIcon, Progress } from "@mantine/core";
 import { FaCirclePlus, FaMinus, FaPlus } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import PieChartHome from "../features/Home/Components/PieChartHome";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
 import { IoWalletOutline } from "react-icons/io5";
+import { CiCalendar, CiCirclePlus } from "react-icons/ci";
 const budget = 7500;
 const Home = () => {
   const [data, setData] = useState({ movements: [], spent: "" });
@@ -106,9 +107,16 @@ const Home = () => {
                 - ${data.spent.toLocaleString()}
               </small>
             </h1>
-            <div>
+            <div className='flex gap-2'>
+              {/* <Link to={"/add-expense"}> */}
+              <ActionIcon color='gray' radius='xl' p={3} size={38}>
+                <CiCalendar size={35} />
+              </ActionIcon>
+              {/* </Link> */}
               <Link to={"/add-expense"}>
-                <FaCirclePlus color='white' size={35} />
+                <ActionIcon color='gray' radius='xl' p={3} size={38}>
+                  <CiCirclePlus size={35} />
+                </ActionIcon>
               </Link>
             </div>
           </div>
@@ -142,8 +150,7 @@ const Home = () => {
           <div className='w-full mx-auto border border-gray-400'></div>
           <div className='flex items-center mt-2 justify-between'>
             <div className='text-sm flex gap-2 items-center'>
-              <IoWalletOutline size={20} color='lightgreen' /> Previous
-              remaining
+              <IoWalletOutline size={20} color='lightgreen' /> Previous balance
             </div>
             <div
               className={`${
