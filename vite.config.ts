@@ -25,13 +25,13 @@ export default defineConfig({
       includeAssets: ["**/*"],
       registerType: "autoUpdate",
 
-      srcDir: "src",
-      filename: "sw.js",
-      strategies: "injectManifest",
-      injectManifest: {
-        swSrc: "src/sw.js",
-        swDest: "sw.js",
-      },
+      // strategies: "injectManifest",
+      // srcDir: "./service-worker",
+      // filename: "sw.js",
+      // injectManifest: {
+      //   swSrc: "./service-worker/sw.js",
+      //   swDest: "sw.js",
+      // },
 
       manifest: {
         short_name: "Expenses",
