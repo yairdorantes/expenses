@@ -108,11 +108,11 @@ const Home = () => {
               </small>
             </h1>
             <div className='flex gap-2'>
-              {/* <Link to={"/add-expense"}> */}
-              <ActionIcon color='gray' radius='xl' p={3} size={38}>
-                <CiCalendar size={35} />
-              </ActionIcon>
-              {/* </Link> */}
+              <Link to={"/recurrent-txs"}>
+                <ActionIcon color='gray' radius='xl' p={3} size={38}>
+                  <CiCalendar size={35} />
+                </ActionIcon>
+              </Link>
               <Link to={"/add-expense"}>
                 <ActionIcon color='gray' radius='xl' p={3} size={38}>
                   <CiCirclePlus size={35} />
