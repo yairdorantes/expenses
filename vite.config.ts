@@ -24,6 +24,15 @@ export default defineConfig({
       // static assets in the public folder
       includeAssets: ["**/*"],
       registerType: "autoUpdate",
+
+      srcDir: "src",
+      filename: "sw.js",
+      strategies: "injectManifest",
+      injectManifest: {
+        swSrc: "src/sw.js",
+        swDest: "sw.js",
+      },
+
       manifest: {
         short_name: "Expenses",
         name: "Expenses",
