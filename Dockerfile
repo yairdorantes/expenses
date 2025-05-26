@@ -23,4 +23,4 @@ EXPOSE 8000
 
 RUN chmod +x /app/wait-for-it.sh
 
-CMD ["sh", "-c", "/app/wait-for-it.sh 192.168.1.9:3306 -- python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "/app/wait-for-it.sh host.docker.internal:3306 -- python manage.py runserver 0.0.0.0:8000"]
