@@ -6,7 +6,7 @@ from loguru import logger
 from django.http import JsonResponse, HttpResponse
 
 from expenses.tasks import process_recurring_transactions
-from .models import Expense, Category, Method, Account, Type, RecurringTransaction
+from .models import Expense, Category, Method, Account, Type, Config
 from django.utils import timezone
 import calendar
 from calendar import monthrange
@@ -15,7 +15,7 @@ from calendar import monthrange
 EXPENSE_TRANSACTION_ID = 1  # THIS IS FOR EXPENSES
 LEND_MONEY_CATEGORY_ID = 14
 FORTNIGHTLY_BUDGET = 7500
-TOTAL_SAVINGS = 70928
+TOTAL_SAVINGS = Config.objects.first().total_savings
 
 
 class Expenses(View):

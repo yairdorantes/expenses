@@ -1,6 +1,14 @@
 from django.db import models
 
 
+class Config(models.Model):
+    total_savings = models.PositiveIntegerField(default=0)
+    fortnightly_budget = models.PositiveIntegerField(default=7500)
+
+    def __str__(self):
+        return f"Total Savings: {self.total_savings}, Fortnightly Budget: {self.fortnightly_budget}"
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
 
