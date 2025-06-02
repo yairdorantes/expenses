@@ -11,7 +11,7 @@ import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
 import { IoWalletOutline } from "react-icons/io5";
 import { CiCalendar, CiCirclePlus } from "react-icons/ci";
-const budget = 7500;
+const budget = 6900;
 const Home = () => {
   const [data, setData] = useState({ movements: [], spent: "" });
   const [movements, setMovements] = useState([]);

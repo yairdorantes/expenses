@@ -1,5 +1,14 @@
 import { useState } from "react";
 import { Button, FloatingIndicator, Tabs } from "@mantine/core";
+import {
+  LeadingActions,
+  SwipeableList,
+  SwipeableListItem,
+  SwipeAction,
+  TrailingActions,
+} from "react-swipeable-list";
+import "react-swipeable-list/dist/styles.css";
+
 const RecurrentTxs = () => {
   const [rootRef, setRootRef] = useState<HTMLDivElement | null>(null);
   const [value, setValue] = useState<string | null>("1");
@@ -19,6 +28,21 @@ const RecurrentTxs = () => {
       });
     }
   };
+  const leadingActions = () => (
+    <LeadingActions>
+      <SwipeAction onClick={() => console.info("swipe action triggered")}>
+        Action name
+      </SwipeAction>
+    </LeadingActions>
+  );
+
+  const trailingActions = () => (
+    <TrailingActions>
+      <SwipeAction onClick={() => console.info("delete")}>
+        <div className=' bg-red-500'>Delete</div>
+      </SwipeAction>
+    </TrailingActions>
+  );
   return (
     <div>
       <Tabs variant='none' value={value} onChange={setValue}>
@@ -43,6 +67,25 @@ const RecurrentTxs = () => {
         <Tabs.Panel value='3'>Third tab content</Tabs.Panel>
       </Tabs>
       <Button onClick={sendNotification}>noti</Button>
+      <SwipeableList>
+        <SwipeableListItem
+          threshold={0.25}
+          fullSwipe={false}
+          // leadingActions={leadingActions()}
+          trailingActions={trailingActions()}
+          onSwipeEnd={() => {
+            console.log("swipe end");
+          }}
+          scrollStartThreshold={5}
+          swipeStartThreshold={5}
+          // scrollEndThreshold={5}
+
+          onSwipeStart={() => console.info("swipe start")}
+          maxSwipe={0.5}
+        >
+          <div className='w-full bg-slate-500'>Item content</div>
+        </SwipeableListItem>
+      </SwipeableList>
     </div>
   );
 };
