@@ -14,8 +14,9 @@ from calendar import monthrange
 # if money.type.id == 1 and money.category.id != 14:
 EXPENSE_TRANSACTION_ID = 1  # THIS IS FOR EXPENSES
 LEND_MONEY_CATEGORY_ID = 14
-FORTNIGHTLY_BUDGET = 7500
-TOTAL_SAVINGS = Config.objects.first().total_savings
+FORTNIGHTLY_BUDGET = 6900
+config = Config.objects.first()
+TOTAL_SAVINGS = config.total_savings if config else 0
 
 
 class Expenses(View):
