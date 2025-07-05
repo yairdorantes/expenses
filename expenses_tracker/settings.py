@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "expenses",
     "corsheaders",
+    "shopping",
 ]
 
 MIDDLEWARE = [
@@ -131,13 +132,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
+USE_TZ = True
+
 TIME_ZONE = "America/Mexico_City"
 
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
