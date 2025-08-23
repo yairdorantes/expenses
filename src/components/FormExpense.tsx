@@ -51,7 +51,7 @@ const FormExpense = () => {
     initialValues: {
       amount: "",
       category: "",
-      type: "",
+      type: "1",
       date: format(new Date(), "yyyy-MM-dd"),
       paymentMethod: "3",
       details: "",
@@ -220,6 +220,7 @@ const FormExpense = () => {
           searchable
           leftSection={<MdCategory />}
           label='Category'
+          clearable
           placeholder='Select a category'
           //   description="expense amount"
           onChange={(value) => {
@@ -235,6 +236,7 @@ const FormExpense = () => {
           required
           size='md'
           searchable
+          clearable
           leftSection={<MdCategory />}
           label='Payment Method'
           placeholder='Select a payment method'
