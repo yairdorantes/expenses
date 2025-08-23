@@ -14,14 +14,14 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
-    if ("Notification" in window) {
-      Notification.requestPermission().then((permission) => {
-        console.log("Notification permission:", permission);
-        sendNotification();
-      });
-    }
-  }, []);
+  // useEffect(() => {
+  //   if ("Notification" in window) {
+  //     Notification.requestPermission().then((permission) => {
+  //       console.log("Notification permission:", permission);
+  //       sendNotification();
+  //     });
+  //   }
+  // }, []);
 
   return (
     <div className=''>

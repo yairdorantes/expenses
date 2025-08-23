@@ -12,24 +12,20 @@ import {
   Flex,
 } from "@mantine/core";
 import { TfiMoney } from "react-icons/tfi";
-import {
-  MdAccountBalance,
-  MdCategory,
-  MdOutlinePayments,
-} from "react-icons/md";
+import { MdCategory } from "react-icons/md";
 import { DateInput } from "@mantine/dates";
 import { CiTextAlignLeft } from "react-icons/ci";
 import { BsFillCalendarDateFill } from "react-icons/bs";
-import { FaMoneyBillTrendUp, FaPiggyBank } from "react-icons/fa6";
+import { FaPiggyBank } from "react-icons/fa6";
 import { useForm } from "@mantine/form";
 import { format } from "date-fns";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCreditCard } from "react-icons/fa";
-import { RiCoinsLine } from "react-icons/ri";
+
 import { GiReceiveMoney } from "react-icons/gi";
+import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -37,8 +33,17 @@ const FormExpense = () => {
   const [loader, setLoader] = useState(false);
   const [checked, setChecked] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string | null>("1");
+  const [tsxType, setTsxType] = useState<number>(1);
   const [categories, setCategories] = useState([]);
-  const [amountTypes, setAmountTypes] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([
+    { value: "1", label: "Cash" },
+    { value: "5", label: "Credit Card" },
+    { value: "3", label: "Debit Card" },
+  ]);
+  const [amountTypes, setAmountTypes] = useState([
+    { value: "1", label: "Expense" },
+    { value: "2", label: "Income" },
+  ]);
 
   const navigate = useNavigate();
   const form = useForm({
@@ -54,7 +59,7 @@ const FormExpense = () => {
     },
   });
 
-  const sendData = (formData: object) => {
+  const sendData = (formData: object, sendingLocalData: boolean = false) => {
     console.log(formData);
     setLoader(true);
     axios
@@ -63,27 +68,74 @@ const FormExpense = () => {
         console.log(res.data);
         toast.success("info sent successfully", { position: "bottom-center" });
         form.reset();
-        navigate("/");
+        localStorage.removeItem("pendingExpenses");
+        // navigate("/");
       })
       .catch((err) => {
         console.log(err);
         toast.error("something went wrong at sending expense data");
+        console.log(sendingLocalData);
+
+        if (!sendingLocalData) {
+          // this logic only runs if the data is not being resent from local storage
+          console.log("sending data to local storage");
+          const pendingExpenses = localStorage.getItem("pendingExpenses");
+          if (pendingExpenses) {
+            const pendingData = JSON.parse(pendingExpenses);
+            pendingData.push(formData);
+            localStorage.setItem(
+              "pendingExpenses",
+              JSON.stringify(pendingData)
+            );
+          } else {
+            localStorage.setItem("pendingExpenses", JSON.stringify([formData]));
+          }
+          toast.error("Expense saved locally, will retry later.", {
+            position: "bottom-center",
+            toastId: "localSaveToast",
+          });
+        }
       })
       .finally(() => setLoader(false));
   };
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/api/form`);
-        console.log(response.data);
-        setCategories(response.data.categories);
-        setAmountTypes(response.data.types);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
+  const lookupPendingExpenses = () => {
+    const pendingExpenses = localStorage.getItem("pendingExpenses");
+    if (pendingExpenses) {
+      const pendingData = JSON.parse(pendingExpenses);
+      sendData(pendingData, true); // Send the pending data to the server
+    }
+  };
+
+  const fetchInitialData = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/form`);
+      console.log(response.data);
+      setCategories(response.data.categories);
+      setAmountTypes(response.data.types);
+      // Save data locally for offline fallback (in case of no server connection)
+      localStorage.setItem(
+        "categories",
+        JSON.stringify(response.data.categories)
+      );
+      localStorage.setItem("types", JSON.stringify(response.data.types));
+    } catch (error) {
+      console.log(error);
+      // Fallback to local storage if the API call fails
+      const localCategories = localStorage.getItem("categories");
+      if (localCategories) {
+        setCategories(JSON.parse(localCategories));
       }
-    };
+
+      toast.error("Failed to fetch categories and types, using local data.", {
+        position: "bottom-center",
+        toastId: "uniqueToast",
+      });
+    }
+  };
+  useEffect(() => {
     fetchInitialData();
+    lookupPendingExpenses();
   }, []);
 
   return (
@@ -93,16 +145,72 @@ const FormExpense = () => {
         console.log(values);
       })}
     >
-      <div className='max-w-sm mx-auto  p-4'>
+      <div className='max-w-sm mx-auto p-4'>
+        {/* expesne type */}
+        <Radio.Group
+          my={5}
+          // value={tsxType.toString()}
+          onChange={(value) => {
+            form.setFieldValue("type", value);
+            console.log(value);
+          }}
+          label='Transaction Type'
+          size='md'
+          //   description='Choose a package that you will need in your application'
+        >
+          <Flex direction='row' gap='md'>
+            <Radio.Card
+              radius='md'
+              value='1'
+              style={{
+                border: "1px solid #d7d9dd",
+                backgroundColor: "#151516",
+                padding: "10px",
+                opacity: form.values.type === "1" ? 1 : 0.5,
+              }}
+            >
+              <Group wrap='nowrap' align='flex-center'>
+                <Flex align='center' gap='xs'>
+                  <div className='text-red-500'>
+                    <FiTrendingDown />
+                  </div>
+                  <Text>Expense</Text>
+                </Flex>
+              </Group>
+            </Radio.Card>
+
+            <Radio.Card
+              radius='md'
+              value='2'
+              style={{
+                border: "1px solid #d7d9dd",
+                backgroundColor: "#151516",
+                padding: "10px",
+                opacity: form.values.type === "2" ? 1 : 0.5,
+              }}
+            >
+              <Group wrap='nowrap' align='flex-center'>
+                <Flex align='center' gap='xs'>
+                  <div className='text-teal-500'>
+                    <FiTrendingUp />
+                  </div>
+                  <Text>Income</Text>
+                </Flex>
+              </Group>
+            </Radio.Card>
+          </Flex>
+        </Radio.Group>
+        {/* expesne type */}
         <NumberInput
           required
           leftSection={<TfiMoney color='green' />}
           label='Amount'
           placeholder='0.00 $'
+          thousandSeparator=','
           //   description="expense amount"
           key={form.key("amount")}
-          description='Enter the expense amount in your local currency.'
-          size='md'
+          // description='Enter the expense amount in your local currency.'
+          size='lg'
           inputWrapperOrder={["label", "error", "input", "description"]}
           {...form.getInputProps("amount")}
         />
@@ -122,20 +230,20 @@ const FormExpense = () => {
           inputWrapperOrder={["label", "error", "input", "description"]}
           //   key={form.key("category")}
           //   {...form.getInputProps("category")}
-        />{" "}
+        />
         <Select
-          size='md'
-          // searchable
           required
-          label='Type'
-          placeholder='income or expense?'
-          leftSection={<FaMoneyBillTrendUp />}
+          size='md'
+          searchable
+          leftSection={<MdCategory />}
+          label='Payment Method'
+          placeholder='Select a payment method'
           //   description="expense amount"
-          description='the type of the amount'
-          data={amountTypes}
           onChange={(value) => {
-            form.setFieldValue("type", value);
+            form.setFieldValue("paymentMethod", value);
           }}
+          description='Select the payment method that best fits your expense.'
+          data={paymentMethods}
           inputWrapperOrder={["label", "error", "input", "description"]}
           //   key={form.key("category")}
           //   {...form.getInputProps("category")}
@@ -159,61 +267,6 @@ const FormExpense = () => {
         />{" "} */}
         <Radio.Group
           my={5}
-          value={paymentMethod}
-          onChange={(value) => form.setFieldValue("paymentMethod", value)}
-          label='Payment Method'
-          size='md'
-          //   description='Choose a package that you will need in your application'
-        >
-          <Flex direction='row' gap='md'>
-            <Radio.Card
-              radius='md'
-              value='3'
-              style={{
-                border:
-                  form.values.paymentMethod === "3"
-                    ? "1px solid #19a130"
-                    : "1px solid #E2E8F0 ",
-                padding: "10px",
-                opacity: form.values.paymentMethod === "3" ? 1 : 0.5,
-              }}
-            >
-              <Group wrap='nowrap' align='flex-center'>
-                <Flex align='center' gap='xs'>
-                  <div className='text-red-500'>
-                    <FaCreditCard />
-                  </div>
-                  <Text>Debit card</Text>
-                </Flex>
-              </Group>
-            </Radio.Card>
-
-            <Radio.Card
-              radius='md'
-              value='1'
-              style={{
-                border:
-                  form.values.paymentMethod === "1"
-                    ? "1px solid #19a130"
-                    : "1px solid #E2E8F0 ",
-                padding: "10px",
-                opacity: form.values.paymentMethod === "1" ? 1 : 0.5,
-              }}
-            >
-              <Group wrap='nowrap' align='flex-center'>
-                <Flex align='center' gap='xs'>
-                  <div className='text-yellow-500'>
-                    <RiCoinsLine />
-                  </div>
-                  <Text>Cash</Text>
-                </Flex>
-              </Group>
-            </Radio.Card>
-          </Flex>
-        </Radio.Group>
-        <Radio.Group
-          my={5}
-          value={paymentMethod}
           onChange={(value) => {
             form.setFieldValue("account", value);
           }}
