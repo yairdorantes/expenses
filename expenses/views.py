@@ -25,17 +25,22 @@ class Expenses(View):
 
     def post(self, request):
         jd = json.loads(request.body)
-        print(jd)
-        expense_data = {
-            "amount": jd.get("amount"),
-            "category": Category.objects.get(id=int(jd.get("category"))),
-            "type": Type.objects.get(id=int(jd.get("type"))),
-            "date": jd.get("date"),  # Assuming 'date' is a DateField in your model
-            "payment_method": Method.objects.get(id=int(jd.get("paymentMethod"))),
-            "details": jd.get("details"),
-            "account": Account.objects.get(id=int(jd.get("account"))),
-        }
-        Expense.objects.create(**expense_data)
+        # Normalize into a list
+        if isinstance(jd, dict):
+            jd = [jd]
+
+        for item in jd:
+            expense_data = {
+                "amount": item.get("amount"),
+                "category": Category.objects.get(id=int(item.get("category"))),
+                "type": Type.objects.get(id=int(item.get("type"))),
+                "date": item.get("date"),
+                "payment_method": Method.objects.get(id=int(item.get("paymentMethod"))),
+                "details": item.get("details"),
+                "account": Account.objects.get(id=int(item.get("account"))),
+            }
+            Expense.objects.create(**expense_data)
+
         return HttpResponse("okis")
 
 
