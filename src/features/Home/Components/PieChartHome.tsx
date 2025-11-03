@@ -113,13 +113,19 @@ const PieChartHome = ({ movements = [], handleClickPiece, reset }) => {
   }, []);
   useEffect(() => {
     if (movements.length > 0) {
-      const maxSpentObj = getCategoryDataWithPercentage(movements).reduce(
-        (max, item) => (item.value > max.value ? item : max)
-      );
-      setSliceSelected(maxSpentObj);
+      const categoryData = getCategoryDataWithPercentage(movements);
+      if (categoryData.length > 0) {
+        const maxSpentObj = categoryData.reduce((max, item) =>
+          item.value > max.value ? item : max
+        );
+        setSliceSelected(maxSpentObj);
+      } else {
+        setSliceSelected(null); // Reset if no data
+      }
+    } else {
+      setSliceSelected(null); // Reset if no movements
     }
   }, [movements]);
-
   return (
     <PieChart width={400} height={400}>
       <Pie
