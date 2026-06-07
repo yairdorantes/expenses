@@ -89,7 +89,7 @@ class Summary(View):
 
 
 def get_summary():
-    target_date = date(2025, 5, 24)
+    target_date = date(2026, 6, 7)
     expenses = Expense.objects.filter(date__gte=target_date)
 
     total = TOTAL_SAVINGS
