@@ -35,7 +35,7 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://expenses-production-a0b7.up.railway.app",
-    "https://expenses.yairserver.uk",
+    "https://expenses.hostdata.uk",
     "http://localhost:5173",
 ]
 # Application definition
