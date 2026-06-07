@@ -68,7 +68,7 @@ class Summary(View):
         target_date = date(2025, 5, 1)
         expenses = Expense.objects.filter(date__gte=target_date)
 
-        total = 71948
+        total = 44791.39
         remaining = 0
         spent = 0
         for money in expenses:
