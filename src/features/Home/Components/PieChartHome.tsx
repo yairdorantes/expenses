@@ -135,15 +135,15 @@ const PieChartHome = ({ movements = [], handleClickPiece, reset }: Props) => {
   const chartData = getCategoryDataWithPercentage(movements);
 
   return (
-    <div className='h-[330px] w-full min-w-0 sm:h-[400px]'>
+    <div className='h-[300px] w-full min-w-0 sm:h-[360px]'>
       <ResponsiveContainer width='100%' height='100%'>
-        <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+        <PieChart margin={{ top: 0, right: 4, bottom: 12, left: 4 }}>
           <Pie
             data={chartData}
             cx='50%'
-            cy='45%'
-            innerRadius='24%'
-            outerRadius='34%'
+            cy='42%'
+            innerRadius={58}
+            outerRadius={92}
             fill='#8884d8'
             dataKey='value'
             labelLine={false}
@@ -197,10 +197,11 @@ const PieChartHome = ({ movements = [], handleClickPiece, reset }: Props) => {
             formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
           />
           <Legend
+            verticalAlign='bottom'
             iconSize={8}
             wrapperStyle={{
-              fontSize: 12,
-              lineHeight: "18px",
+              fontSize: 11,
+              lineHeight: "16px",
               maxWidth: "100%",
               paddingInline: 8,
             }}

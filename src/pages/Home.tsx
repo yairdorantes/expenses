@@ -216,7 +216,7 @@ const Home = () => {
           </div>
         </div>
       </main>
-      <div className='w-full max-w-lg rounded-lg flex justify-center mx-auto border border-gray-400 overflow-hidden'>
+      <div className='w-full max-w-lg rounded-lg flex justify-center mx-auto border border-gray-400 overflow-hidden px-1 py-2'>
         <PieChartHome
           handleClickPiece={handleClickPiece}
           movements={data.movements}
