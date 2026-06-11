@@ -3,9 +3,24 @@
 @tailwind utilities;
 * {
   color-scheme: dark;
+  box-sizing: border-box;
   /* padding: 4px; */
 }
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+}
 body {
-  padding: 12px;
+  margin: 0;
+  overflow-x: hidden;
+  padding: 8px;
 }
 /* comment */
+
+@media (min-width: 640px) {
+  body {
+    padding: 12px;
+  }
+}

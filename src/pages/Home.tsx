@@ -19,6 +19,7 @@ interface Movement {
   date: string;
   type: string;
   category: string;
+  categoryName?: string;
   details: string;
 }
 
@@ -130,18 +131,18 @@ const Home = () => {
   }, []);
 
   return (
-    <div>
+    <div className='w-full overflow-x-hidden'>
       {/* <MenuDrawer></MenuDrawer> */}
-      <main className='max-w-lg mx-auto p-4 border border-gray-400 rounded-lg mb-5'>
-        <div className=''>
+      <main className='w-full max-w-lg mx-auto p-3 sm:p-4 border border-gray-400 rounded-lg mb-5'>
+        <div>
           <h4>Total</h4>
-          <div className='flex justify-between'>
-            <h1 className='font-bold  flex items-end gap-2'>
+          <div className='flex items-start justify-between gap-2'>
+            <h1 className='font-bold flex min-w-0 flex-wrap items-end gap-x-2 gap-y-1'>
               <span
                 onClick={() => setToggleSummary(!toggleSummary)}
-                className='text-3xl text-white  font-extrabold flex items-center'
+                className='text-2xl sm:text-3xl text-white font-extrabold flex min-w-0 items-center'
               >
-                <BsCurrencyDollar />
+                <BsCurrencyDollar className='shrink-0' />
                 {toggleSummary ? (
                   <SlotCounter
                     value={addComma((budget - data.spent).toFixed(2))}
@@ -153,19 +154,19 @@ const Home = () => {
                   />
                 )}
               </span>
-              <small className='text-red-500 text-sm'>
+              <small className='text-red-500 text-xs sm:text-sm whitespace-nowrap'>
                 - ${data.spent.toLocaleString()}
               </small>
             </h1>
-            <div className='flex gap-2'>
+            <div className='flex shrink-0 gap-2'>
               <Link to={"/recurrent-txs"}>
-                <ActionIcon color='gray' radius='xl' p={3} size={38}>
-                  <CiCalendar size={35} />
+                <ActionIcon color='gray' radius='xl' p={3} size={34}>
+                  <CiCalendar size={30} />
                 </ActionIcon>
               </Link>
               <Link to={"/add-expense"}>
-                <ActionIcon color='gray' radius='xl' p={3} size={38}>
-                  <CiCirclePlus size={35} />
+                <ActionIcon color='gray' radius='xl' p={3} size={34}>
+                  <CiCirclePlus size={30} />
                 </ActionIcon>
               </Link>
             </div>
@@ -184,11 +185,11 @@ const Home = () => {
           </div>
         </div>
         <div className='flex items-center gap-2'>
-          <div className='text-sm font-bold  flex items-center text-yellow-100'>
+          <div className='text-sm font-bold flex shrink-0 items-center text-yellow-100'>
             <BsCurrencyDollar size={15} />
             {budget.toLocaleString()}
           </div>
-          <div className=' w-[90%] '>
+          <div className='min-w-0 flex-1'>
             <Progress
               radius='md'
               color={getBarColor((data.spent / budget) * 100)}
@@ -198,14 +199,14 @@ const Home = () => {
         </div>
         <div className='mt-2 '>
           <div className='w-full mx-auto border border-gray-400'></div>
-          <div className='flex items-center mt-2 justify-between'>
-            <div className='text-sm flex gap-2 items-center'>
+          <div className='flex items-center mt-2 justify-between gap-2'>
+            <div className='text-sm flex min-w-0 gap-2 items-center'>
               <IoWalletOutline size={20} color='lightgreen' /> Previous balance
             </div>
             <div
               className={`${
                 data.previous_balance > 0 ? "text-green-500" : "text-red-500"
-              } font-bold text-lg flex items-center`}
+              } font-bold text-base sm:text-lg flex shrink-0 items-center`}
             >
               {data.previous_balance > 0 ? <FaPlus /> : <FaMinus size={10} />}
               <BsCurrencyDollar size={15} />
@@ -215,15 +216,15 @@ const Home = () => {
           </div>
         </div>
       </main>
-      <div className='lg:max-w-lg rounded-lg flex justify-center mx-auto  border border-gray-400 '>
+      <div className='w-full max-w-lg rounded-lg flex justify-center mx-auto border border-gray-400 overflow-hidden'>
         <PieChartHome
           handleClickPiece={handleClickPiece}
-          movements={data.movements as []}
+          movements={data.movements}
           reset={resetMovements}
         />
       </div>
 
-      <div className='max-w-lg h-fit max-h-[500px] overflow-y-auto overflow-hidden mx-auto border border-gray-400 rounded-lg px-2 pt-2  mt-5 '>
+      <div className='w-full max-w-lg h-fit max-h-[500px] overflow-y-auto overflow-x-hidden mx-auto border border-gray-400 rounded-lg px-2 pt-2 mt-5'>
         {movements.map((movement, i) => (
           <MovementCard
             onClickCard={clickCardMovement}
