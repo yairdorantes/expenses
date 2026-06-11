@@ -42,6 +42,7 @@ def serialize_expense(expense):
         "amount": float(expense.amount),
         "type": str(expense.type.id),
         "category": str(expense.category.id),
+        "categoryName": expense.category.name,
         "date": expense.date,
         "paymentMethod": str(expense.payment_method.id),
         "details": expense.details,
