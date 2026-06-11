@@ -4,19 +4,45 @@ import MovementCard from "../features/Home/Components/MovementCard";
 const apiUrl = import.meta.env.VITE_API_URL;
 import SlotCounter from "react-slot-counter";
 import { ActionIcon, Progress } from "@mantine/core";
-import { FaCirclePlus, FaMinus, FaPlus } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { FaMinus, FaPlus } from "react-icons/fa6";
+import { Link, useNavigate } from "react-router-dom";
 import PieChartHome from "../features/Home/Components/PieChartHome";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
 import { IoWalletOutline } from "react-icons/io5";
 import { CiCalendar, CiCirclePlus } from "react-icons/ci";
 const budget = 6900;
+
+interface Movement {
+  id: number;
+  amount: number;
+  date: string;
+  type: string;
+  category: string;
+  details: string;
+}
+
+interface PeriodData {
+  movements: Movement[];
+  spent: number;
+  remaining: number;
+  previous_balance: number;
+}
+
+interface PiePiece {
+  id: string;
+}
+
 const Home = () => {
-  const [data, setData] = useState({ movements: [], spent: "" });
-  const [movements, setMovements] = useState([]);
+  const navigate = useNavigate();
+  const [data, setData] = useState<PeriodData>({
+    movements: [],
+    spent: 0,
+    remaining: 0,
+    previous_balance: 0,
+  });
+  const [movements, setMovements] = useState<Movement[]>([]);
   const [activeMovement, setActiveMovement] = useState(0);
-  const [pieceSelected, setPieceSelected] = useState({});
   const [toggleSummary, setToggleSummary] = useState(true);
 
   const getData = () => {
@@ -39,8 +65,7 @@ const Home = () => {
       });
   };
 
-  const handleClickPiece = (piece: object) => {
-    setPieceSelected(piece);
+  const handleClickPiece = (piece: PiePiece) => {
     const newData = data.movements.filter(
       (movement) => movement.category === piece.id
     );
@@ -49,19 +74,44 @@ const Home = () => {
   };
   const resetMovements = () => setMovements(data.movements);
 
-  const clickCardMovement = (id: int) => {
+  const clickCardMovement = (id: number) => {
     activeMovement === id ? setActiveMovement(0) : setActiveMovement(id);
   };
-  const addComma = (number: number) => {
+  const addComma = (number: number | string) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  const getBarColor = (percentageSpent) => {
+  const getBarColor = (percentageSpent: number) => {
     if (percentageSpent <= 50) return "green";
     if (percentageSpent > 50 && percentageSpent <= 75) return "yellow";
     if (percentageSpent > 75 && percentageSpent <= 90) return "orange";
     if (percentageSpent > 90 && percentageSpent <= 100) return "red";
     return "darkred"; // optional: for values over 100%
+  };
+
+  const handleEditMovement = (id: number) => {
+    navigate(`/edit-expense/${id}`);
+  };
+
+  const handleDeleteMovement = (id: number) => {
+    const shouldDelete = window.confirm("Delete this expense?");
+    if (!shouldDelete) return;
+
+    axios
+      .delete(`${apiUrl}/api/expenses/${id}`)
+      .then(() => {
+        toast.success("expense deleted successfully", {
+          position: "bottom-center",
+        });
+        if (activeMovement === id) {
+          setActiveMovement(0);
+        }
+        getData();
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("something went wrong deleting the expense");
+      });
   };
 
   useEffect(() => {
@@ -168,7 +218,7 @@ const Home = () => {
       <div className='lg:max-w-lg rounded-lg flex justify-center mx-auto  border border-gray-400 '>
         <PieChartHome
           handleClickPiece={handleClickPiece}
-          movements={data.movements}
+          movements={data.movements as []}
           reset={resetMovements}
         />
       </div>
@@ -177,6 +227,8 @@ const Home = () => {
         {movements.map((movement, i) => (
           <MovementCard
             onClickCard={clickCardMovement}
+            onDelete={handleDeleteMovement}
+            onEdit={handleEditMovement}
             active={activeMovement}
             movement={movement}
             key={i}

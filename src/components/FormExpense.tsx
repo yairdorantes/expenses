@@ -1,11 +1,9 @@
 import {
   Button,
   Loader,
-  NativeSelect,
   NumberInput,
   Select,
   Textarea,
-  TextInput,
   Radio,
   Group,
   Text,
@@ -22,27 +20,27 @@ import { format } from "date-fns";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { GiReceiveMoney } from "react-icons/gi";
 import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
+const getDateValue = (date: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const FormExpense = () => {
+  const { expenseId } = useParams();
+  const isEditing = Boolean(expenseId);
   const [loader, setLoader] = useState(false);
-  const [checked, setChecked] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<string | null>("1");
-  const [tsxType, setTsxType] = useState<number>(1);
   const [categories, setCategories] = useState([]);
-  const [paymentMethods, setPaymentMethods] = useState([
+  const [paymentMethods] = useState([
     { value: "1", label: "Cash" },
     { value: "5", label: "Credit Card" },
     { value: "3", label: "Debit Card" },
-  ]);
-  const [amountTypes, setAmountTypes] = useState([
-    { value: "1", label: "Expense" },
-    { value: "2", label: "Income" },
   ]);
 
   const navigate = useNavigate();
@@ -62,21 +60,29 @@ const FormExpense = () => {
   const sendData = (formData: object, sendingLocalData: boolean = false) => {
     console.log(formData);
     setLoader(true);
-    axios
-      .post(`${apiUrl}/api/expenses`, formData)
+    const request = isEditing
+      ? axios.put(`${apiUrl}/api/expenses/${expenseId}`, formData)
+      : axios.post(`${apiUrl}/api/expenses`, formData);
+
+    request
       .then((res) => {
         console.log(res.data);
-        toast.success("info sent successfully", { position: "bottom-center" });
+        toast.success(
+          isEditing
+            ? "expense updated successfully"
+            : "info sent successfully",
+          { position: "bottom-center" }
+        );
         form.reset();
         localStorage.removeItem("pendingExpenses");
-        // navigate("/");
+        navigate("/");
       })
       .catch((err) => {
         console.log(err);
         toast.error("something went wrong at sending expense data");
         console.log(sendingLocalData);
 
-        if (!sendingLocalData) {
+        if (!sendingLocalData && !isEditing) {
           // this logic only runs if the data is not being resent from local storage
           console.log("sending data to local storage");
           const pendingExpenses = localStorage.getItem("pendingExpenses");
@@ -112,7 +118,6 @@ const FormExpense = () => {
       const response = await axios.get(`${apiUrl}/api/form`);
       console.log(response.data);
       setCategories(response.data.categories);
-      setAmountTypes(response.data.types);
       // Save data locally for offline fallback (in case of no server connection)
       localStorage.setItem(
         "categories",
@@ -133,10 +138,38 @@ const FormExpense = () => {
       });
     }
   };
+
+  const fetchExpense = async () => {
+    if (!expenseId) return;
+
+    try {
+      const response = await axios.get(`${apiUrl}/api/expenses/${expenseId}`);
+      form.setValues({
+        amount: String(response.data.amount),
+        category: response.data.category,
+        type: response.data.type,
+        date: response.data.date.slice(0, 10),
+        paymentMethod: response.data.paymentMethod,
+        details: response.data.details || "",
+        account: response.data.account,
+      });
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to fetch expense data.", {
+        position: "bottom-center",
+      });
+      navigate("/");
+    }
+  };
+
   useEffect(() => {
     fetchInitialData();
-    lookupPendingExpenses();
-  }, []);
+    if (isEditing) {
+      fetchExpense();
+    } else {
+      lookupPendingExpenses();
+    }
+  }, [expenseId]);
 
   return (
     <form
@@ -149,7 +182,7 @@ const FormExpense = () => {
         {/* expesne type */}
         <Radio.Group
           my={5}
-          // value={tsxType.toString()}
+          value={form.values.type}
           onChange={(value) => {
             form.setFieldValue("type", value);
             console.log(value);
@@ -224,8 +257,9 @@ const FormExpense = () => {
           placeholder='Select a category'
           //   description="expense amount"
           onChange={(value) => {
-            form.setFieldValue("category", value);
+            form.setFieldValue("category", value || "");
           }}
+          value={form.values.category}
           description='Select the category that best fits your expense.'
           data={categories}
           inputWrapperOrder={["label", "error", "input", "description"]}
@@ -242,8 +276,9 @@ const FormExpense = () => {
           placeholder='Select a payment method'
           //   description="expense amount"
           onChange={(value) => {
-            form.setFieldValue("paymentMethod", value);
+            form.setFieldValue("paymentMethod", value || "");
           }}
+          value={form.values.paymentMethod}
           description='Select the payment method that best fits your expense.'
           data={paymentMethods}
           inputWrapperOrder={["label", "error", "input", "description"]}
@@ -269,6 +304,7 @@ const FormExpense = () => {
         />{" "} */}
         <Radio.Group
           my={5}
+          value={form.values.account}
           onChange={(value) => {
             form.setFieldValue("account", value);
           }}
@@ -324,14 +360,15 @@ const FormExpense = () => {
         </Radio.Group>
         <DateInput
           size='md'
-          //   value={value}
+          value={form.values.date ? getDateValue(form.values.date) : null}
           //   onChange={setValue}
           label='Date of amount'
           //   defaultDate={new Date()}
-          onChange={(date) =>
-            form.setFieldValue("date", format(date, "yyyy-MM-dd"))
-          }
-          defaultValue={new Date()}
+          onChange={(date) => {
+            if (date) {
+              form.setFieldValue("date", format(date, "yyyy-MM-dd"));
+            }
+          }}
           leftSection={<BsFillCalendarDateFill />}
           placeholder='pick a date'
           description='The date when the expense occurred.'
@@ -353,7 +390,7 @@ const FormExpense = () => {
         />
         <div className='mb-2 mt-7'>
           <Button disabled={loader} color='green' fullWidth type='submit'>
-            {loader ? <Loader /> : "Add"}
+            {loader ? <Loader /> : isEditing ? "Update" : "Add"}
           </Button>
         </div>
       </div>

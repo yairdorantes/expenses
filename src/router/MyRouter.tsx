@@ -8,6 +8,7 @@ const Myrouter = () => {
     <Routes>
       <Route path='/' element={<Home />} />
       <Route path='/add-expense' element={<FormExpense />} />
+      <Route path='/edit-expense/:expenseId' element={<FormExpense />} />
       <Route path='/recurrent-txs' element={<RecurrentTxs />} />
     </Routes>
   );
