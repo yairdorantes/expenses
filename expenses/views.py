@@ -4,6 +4,7 @@ from django.views import View
 import traceback
 from loguru import logger
 from django.http import JsonResponse, HttpResponse
+from django.shortcuts import get_object_or_404
 
 from expenses.tasks import process_recurring_transactions
 from .models import Expense, Category, Method, Account, Type, Config
@@ -30,18 +31,58 @@ class Expenses(View):
             jd = [jd]
 
         for item in jd:
-            expense_data = {
-                "amount": item.get("amount"),
-                "category": Category.objects.get(id=int(item.get("category"))),
-                "type": Type.objects.get(id=int(item.get("type"))),
-                "date": item.get("date"),
-                "payment_method": Method.objects.get(id=int(item.get("paymentMethod"))),
-                "details": item.get("details"),
-                "account": Account.objects.get(id=int(item.get("account"))),
-            }
-            Expense.objects.create(**expense_data)
+            Expense.objects.create(**get_expense_data(item))
 
         return HttpResponse("okis")
+
+
+def serialize_expense(expense):
+    return {
+        "id": expense.id,
+        "amount": float(expense.amount),
+        "type": str(expense.type.id),
+        "category": str(expense.category.id),
+        "date": expense.date,
+        "paymentMethod": str(expense.payment_method.id),
+        "details": expense.details,
+        "account": str(expense.account.id),
+    }
+
+
+def get_expense_data(item):
+    return {
+        "amount": item.get("amount"),
+        "category": Category.objects.get(id=int(item.get("category"))),
+        "type": Type.objects.get(id=int(item.get("type"))),
+        "date": item.get("date"),
+        "payment_method": Method.objects.get(id=int(item.get("paymentMethod"))),
+        "details": item.get("details"),
+        "account": Account.objects.get(id=int(item.get("account"))),
+    }
+
+
+class ExpenseDetail(View):
+    def get(self, request, expense_id):
+        expense = get_object_or_404(Expense, id=expense_id)
+        return JsonResponse(serialize_expense(expense))
+
+    def put(self, request, expense_id):
+        try:
+            expense = get_object_or_404(Expense, id=expense_id)
+            expense_data = get_expense_data(json.loads(request.body))
+            for field, value in expense_data.items():
+                setattr(expense, field, value)
+            expense.save()
+            return JsonResponse(serialize_expense(expense))
+        except Exception as e:
+            print("Error:", e)
+            traceback.print_exc()
+            return JsonResponse({"error": "Ocurrió un error"}, status=400)
+
+    def delete(self, request, expense_id):
+        expense = get_object_or_404(Expense, id=expense_id)
+        expense.delete()
+        return JsonResponse({"message": "Expense deleted successfully."})
 
 
 class Form(View):
@@ -163,14 +204,7 @@ class PeriodSummary(View):
             print("spent:", spent)
             print("remaining:", remaining)
             expenses_data = [
-                {
-                    "id": expense.id,
-                    "amount": expense.amount,
-                    "type": str(expense.type.id),
-                    "category": str(expense.category.id),
-                    "date": expense.date,
-                    "details": expense.details,
-                }
+                serialize_expense(expense)
                 for expense in expenses
             ]
             prev_start, prev_end = get_previous_period(year, month, period)

@@ -1,9 +1,21 @@
 from django.urls import path
-from .views import Expenses, Summary, PeriodSummary, Form, RecurringTransactionsView
+from .views import (
+    ExpenseDetail,
+    Expenses,
+    Summary,
+    PeriodSummary,
+    Form,
+    RecurringTransactionsView,
+)
 from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path("expenses", csrf_exempt(Expenses.as_view()), name="expenses"),
+    path(
+        "expenses/<int:expense_id>",
+        csrf_exempt(ExpenseDetail.as_view()),
+        name="expense detail",
+    ),
     path(
         "recurrent_txs",
         csrf_exempt(RecurringTransactionsView.as_view()),
