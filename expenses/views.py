@@ -15,9 +15,12 @@ from calendar import monthrange
 
 EXPENSE_TRANSACTION_ID = 1  # THIS IS FOR EXPENSES
 LEND_MONEY_CATEGORY_ID = 14
-config = Config.objects.first()
-TOTAL_SAVINGS = config.total_savings if config else 0
-FORTNIGHTLY_BUDGET = config.fortnightly_budget if config else 0
+def get_config_values():
+    config = Config.objects.first()
+    return {
+        "total_savings": config.total_savings if config else 0,
+        "fortnightly_budget": config.fortnightly_budget if config else 7500,
+    }
 
 
 class Expenses(View):
@@ -125,8 +128,8 @@ class ExpenseDetail(View):
 class Form(View):
     def get(self, request):
         categories = Category.objects.all()
-
         types = Type.objects.all()
+        config = Config.objects.first()
         categories_data = [
             {"value": str(category.id), "label": category.name}
             for category in categories
@@ -137,6 +140,12 @@ class Form(View):
             {
                 "categories": categories_data,
                 "types": types_data,
+                "config": {
+                    "totalSavings": config.total_savings if config else 0,
+                    "fortnightlyBudget": (
+                        config.fortnightly_budget if config else 7500
+                    ),
+                },
             }
         )
 
@@ -169,8 +178,9 @@ class Summary(View):
 def get_summary():
     target_date = date(2026, 6, 1)
     expenses = Expense.objects.filter(date__gte=target_date)
+    config = get_config_values()
 
-    total = TOTAL_SAVINGS
+    total = config["total_savings"]
     remaining = 0
     spent = 0
     for money in expenses:
@@ -229,8 +239,9 @@ class PeriodSummary(View):
             expenses = Expense.objects.filter(
                 date__range=(start_date, end_date)
             ).order_by("-date")
+            config = get_config_values()
 
-            total = 15000
+            total = config["fortnightly_budget"]
             remaining = 0
             spent = 0
             for money in expenses:
@@ -261,7 +272,9 @@ class PeriodSummary(View):
                     "spent": float(spent),
                     "movements": expenses_data,
                     "remaining": float(get_summary()),
-                    "previous_balance": float(FORTNIGHTLY_BUDGET - prev_spent),
+                    "previous_balance": float(
+                        config["fortnightly_budget"] - prev_spent
+                    ),
                 }
             )
 
