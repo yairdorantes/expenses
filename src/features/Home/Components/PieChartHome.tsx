@@ -14,6 +14,7 @@ import {
   getCategoryLabel,
   type CategoryOption,
 } from "../../categories";
+import { expenseRepository } from "../../../offline/expenseRepository";
 
 interface Movement {
   amount: number | string;
@@ -103,19 +104,11 @@ const PieChartHome = ({ movements = [], handleClickPiece, reset }: Props) => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/form`
-        );
-        const data = await response.json();
-        setCategories(data.categories || fallbackCategories);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        setCategories(fallbackCategories);
-      }
+      const data = await expenseRepository.getFormOptions();
+      setCategories(data.categories || fallbackCategories);
     };
 
-    fetchCategories();
+    void fetchCategories();
   }, []);
   useEffect(() => {
     if (movements.length > 0) {

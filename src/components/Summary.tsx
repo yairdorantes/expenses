@@ -1,24 +1,23 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
-const apiUrl = import.meta.env.VITE_API_URL;
-import SlotCounter from "react-slot-counter";
 import ChartOne from "../features/Home/Components/ChartOne";
+import { expenseRepository } from "../offline/expenseRepository";
 
 const Summary = () => {
   const [total, setTotal] = useState(0);
   const [spent, setSpent] = useState(0);
   const [remaining, setRemaining] = useState(0);
   useEffect(() => {
-    axios
-      .get(`${apiUrl}/api/expenses`)
-      .then((res) => {
-        console.log(res.data);
-        setTotal(res.data.total);
-        setSpent(res.data.spent);
-        setRemaining(res.data.remaining);
-      })
-      .catch((err) => {
-        console.log(err);
+    const currentYear = new Date().getFullYear();
+    const today = new Date();
+    const period = today.getDate() <= 15 ? 1 : 2;
+    const month = today.getMonth() + 1;
+
+    void expenseRepository
+      .getPeriodSummary(period, month, currentYear)
+      .then((data) => {
+        setTotal(data.remaining + data.spent);
+        setSpent(data.spent);
+        setRemaining(data.remaining);
       });
   }, []);
 

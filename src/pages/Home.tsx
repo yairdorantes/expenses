@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import MovementCard from "../features/Home/Components/MovementCard";
-const apiUrl = import.meta.env.VITE_API_URL;
 import SlotCounter from "react-slot-counter";
 import { ActionIcon, Progress } from "@mantine/core";
 import { FaMinus, FaPlus } from "react-icons/fa6";
@@ -11,73 +9,68 @@ import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
 import { IoWalletOutline } from "react-icons/io5";
 import { CiCalendar, CiCirclePlus } from "react-icons/ci";
+import { expenseRepository } from "../offline/expenseRepository";
+import type { ClassifiedError, LocalExpense, PeriodData } from "../offline/types";
+
 const budget = 6900;
-
-interface Movement {
-  id: number;
-  amount: number;
-  date: string;
-  type: string;
-  category: string;
-  categoryName?: string;
-  details: string;
-}
-
-interface PeriodData {
-  movements: Movement[];
-  spent: number;
-  remaining: number;
-  previous_balance: number;
-}
 
 interface PiePiece {
   id: string;
 }
 
+type PeriodDataWithError = PeriodData & { error?: ClassifiedError };
+
+const emptyPeriodData: PeriodDataWithError = {
+  movements: [],
+  spent: 0,
+  remaining: 0,
+  previous_balance: 0,
+  source: "local",
+};
+
 const Home = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState<PeriodData>({
-    movements: [],
-    spent: 0,
-    remaining: 0,
-    previous_balance: 0,
-  });
-  const [movements, setMovements] = useState<Movement[]>([]);
-  const [activeMovement, setActiveMovement] = useState(0);
+  const [data, setData] = useState<PeriodDataWithError>(emptyPeriodData);
+  const [movements, setMovements] = useState<LocalExpense[]>([]);
+  const [activeMovement, setActiveMovement] = useState("");
   const [toggleSummary, setToggleSummary] = useState(true);
 
-  const getData = () => {
+  const getData = async () => {
     const currentYear = new Date().getFullYear();
     const today = new Date();
     const day = today.getDate();
     const period = day <= 15 ? 1 : 2;
     const month = today.getMonth() + 1;
-    axios
-      .get(`${apiUrl}/api/period/${period}/${month}/${currentYear}`)
-      .then((res) => {
-        // console.log(res.data);
-        setData(res.data);
-        setMovements(res.data.movements);
+    const nextData = await expenseRepository.getPeriodSummary(
+      period,
+      month,
+      currentYear
+    );
 
-        console.log(res.data.previous_remaining);
-      })
-      .catch((err) => {
-        console.log(err);
+    setData(nextData);
+    setMovements(nextData.movements);
+
+    if (nextData.error) {
+      toast.info(nextData.error.message, {
+        position: "bottom-center",
+        toastId: "period-local-fallback",
       });
+    }
   };
 
   const handleClickPiece = (piece: PiePiece) => {
     const newData = data.movements.filter(
       (movement) => movement.category === piece.id
     );
-    // console.log(newData);
     setMovements(newData);
   };
+
   const resetMovements = () => setMovements(data.movements);
 
-  const clickCardMovement = (id: number) => {
-    activeMovement === id ? setActiveMovement(0) : setActiveMovement(id);
+  const clickCardMovement = (id: string) => {
+    activeMovement === id ? setActiveMovement("") : setActiveMovement(id);
   };
+
   const addComma = (number: number | string) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
@@ -87,55 +80,78 @@ const Home = () => {
     if (percentageSpent > 50 && percentageSpent <= 75) return "yellow";
     if (percentageSpent > 75 && percentageSpent <= 90) return "orange";
     if (percentageSpent > 90 && percentageSpent <= 100) return "red";
-    return "darkred"; // optional: for values over 100%
+    return "darkred";
   };
 
-  const handleEditMovement = (id: number) => {
+  const handleEditMovement = (id: string) => {
     navigate(`/edit-expense/${id}`);
   };
 
-  const handleDeleteMovement = (id: number) => {
+  const handleDeleteMovement = async (id: string) => {
     const shouldDelete = window.confirm("Delete this expense?");
     if (!shouldDelete) return;
 
-    axios
-      .delete(`${apiUrl}/api/expenses/${id}`)
-      .then(() => {
-        toast.success("expense deleted successfully", {
-          position: "bottom-center",
-        });
-        if (activeMovement === id) {
-          setActiveMovement(0);
-        }
-        getData();
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error("something went wrong deleting the expense");
+    try {
+      await expenseRepository.deleteExpense(id);
+      toast.success("Expense deleted locally. Sync will run automatically.", {
+        position: "bottom-center",
       });
+
+      if (activeMovement === id) {
+        setActiveMovement("");
+      }
+
+      void getData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not delete this expense locally.");
+    }
   };
 
   useEffect(() => {
-    getData();
-    axios
-      .post(`${apiUrl}/api/recurrent_txs`)
-      .then((res) => {
-        console.log(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error(
-          "something went wrong at processing recurrent transactions"
-        );
-      });
+    void getData();
+
+    const handleLocalChange = () => {
+      void getData();
+    };
+
+    window.addEventListener("expenses:local-change", handleLocalChange);
+
+    void expenseRepository.processRecurringTransactions().then((error) => {
+      if (error) {
+        toast.info(error.message, {
+          position: "bottom-center",
+          toastId: "recurring-local-fallback",
+        });
+      }
+    });
+
+    return () => {
+      window.removeEventListener("expenses:local-change", handleLocalChange);
+    };
   }, []);
+
+  const pendingCount = data.movements.filter(
+    (movement) => movement.syncState !== "synced"
+  ).length;
+  const networkLabel = !navigator.onLine
+    ? "Offline"
+    : pendingCount > 0
+    ? `${pendingCount} pending`
+    : "Synced";
+  const networkColor =
+    !navigator.onLine || pendingCount > 0 ? "text-yellow-300" : "text-green-300";
 
   return (
     <div className='w-full overflow-x-hidden'>
-      {/* <MenuDrawer></MenuDrawer> */}
       <main className='w-full max-w-lg mx-auto p-3 sm:p-4 border border-gray-400 rounded-lg mb-5'>
         <div>
-          <h4>Total</h4>
+          <div className='flex items-center justify-between'>
+            <h4>Total</h4>
+            <small className={`font-semibold ${networkColor}`}>
+              {networkLabel}
+            </small>
+          </div>
           <div className='flex items-start justify-between gap-2'>
             <h1 className='font-bold flex min-w-0 flex-wrap items-end gap-x-2 gap-y-1'>
               <span
@@ -172,10 +188,10 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div className=''>
+        <div>
           <div className='flex justify-between'>
             <div>
-              <span className='font-bold  text-sm'>Quincenal Budget</span>{" "}
+              <span className='font-bold text-sm'>Quincenal Budget</span>{" "}
             </div>
             <div>
               <span className='font-bold text-white'>
@@ -197,7 +213,7 @@ const Home = () => {
             />
           </div>
         </div>
-        <div className='mt-2 '>
+        <div className='mt-2'>
           <div className='w-full mx-auto border border-gray-400'></div>
           <div className='flex items-center mt-2 justify-between gap-2'>
             <div className='text-sm flex min-w-0 gap-2 items-center'>
@@ -225,14 +241,14 @@ const Home = () => {
       </div>
 
       <div className='w-full max-w-lg h-fit max-h-[500px] overflow-y-auto overflow-x-hidden mx-auto border border-gray-400 rounded-lg px-2 pt-2 mt-5'>
-        {movements.map((movement, i) => (
+        {movements.map((movement) => (
           <MovementCard
             onClickCard={clickCardMovement}
             onDelete={handleDeleteMovement}
             onEdit={handleEditMovement}
             active={activeMovement}
             movement={movement}
-            key={i}
+            key={movement.localId}
           />
         ))}
       </div>

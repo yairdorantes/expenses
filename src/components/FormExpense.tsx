@@ -17,15 +17,14 @@ import { BsFillCalendarDateFill } from "react-icons/bs";
 import { FaPiggyBank } from "react-icons/fa6";
 import { useForm } from "@mantine/form";
 import { format } from "date-fns";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { GiReceiveMoney } from "react-icons/gi";
 import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
-
-const apiUrl = import.meta.env.VITE_API_URL;
+import { expenseRepository } from "../offline/expenseRepository";
+import type { SelectOption } from "../offline/types";
 
 const getDateValue = (date: string) => {
   const [year, month, day] = date.split("-").map(Number);
@@ -36,7 +35,7 @@ const FormExpense = () => {
   const { expenseId } = useParams();
   const isEditing = Boolean(expenseId);
   const [loader, setLoader] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<SelectOption[]>([]);
   const [paymentMethods] = useState([
     { value: "1", label: "Cash" },
     { value: "5", label: "Credit Card" },
@@ -57,105 +56,60 @@ const FormExpense = () => {
     },
   });
 
-  const sendData = (formData: object, sendingLocalData: boolean = false) => {
-    console.log(formData);
+  const sendData = async (formData: typeof form.values) => {
     setLoader(true);
-    const request = isEditing
-      ? axios.put(`${apiUrl}/api/expenses/${expenseId}`, formData)
-      : axios.post(`${apiUrl}/api/expenses`, formData);
+    try {
+      if (isEditing && expenseId) {
+        await expenseRepository.updateExpense(expenseId, formData);
+      } else {
+        await expenseRepository.createExpense(formData);
+      }
 
-    request
-      .then((res) => {
-        console.log(res.data);
-        toast.success(
-          isEditing
-            ? "expense updated successfully"
-            : "info sent successfully",
-          { position: "bottom-center" }
-        );
-        form.reset();
-        localStorage.removeItem("pendingExpenses");
-        navigate("/");
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error("something went wrong at sending expense data");
-        console.log(sendingLocalData);
-
-        if (!sendingLocalData && !isEditing) {
-          // this logic only runs if the data is not being resent from local storage
-          console.log("sending data to local storage");
-          const pendingExpenses = localStorage.getItem("pendingExpenses");
-          if (pendingExpenses) {
-            const pendingData = JSON.parse(pendingExpenses);
-            pendingData.push(formData);
-            localStorage.setItem(
-              "pendingExpenses",
-              JSON.stringify(pendingData)
-            );
-          } else {
-            localStorage.setItem("pendingExpenses", JSON.stringify([formData]));
-          }
-          toast.error("Expense saved locally, will retry later.", {
-            position: "bottom-center",
-            toastId: "localSaveToast",
-          });
-        }
-      })
-      .finally(() => setLoader(false));
-  };
-
-  const lookupPendingExpenses = () => {
-    const pendingExpenses = localStorage.getItem("pendingExpenses");
-    if (pendingExpenses) {
-      const pendingData = JSON.parse(pendingExpenses);
-      sendData(pendingData, true); // Send the pending data to the server
+      toast.success(
+        isEditing
+          ? "Expense updated locally. Sync will run automatically."
+          : "Expense saved locally. Sync will run automatically.",
+        { position: "bottom-center" }
+      );
+      form.reset();
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not save the expense locally.", {
+        position: "bottom-center",
+      });
+    } finally {
+      setLoader(false);
     }
   };
 
   const fetchInitialData = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/api/form`);
-      console.log(response.data);
-      setCategories(response.data.categories);
-      // Save data locally for offline fallback (in case of no server connection)
-      localStorage.setItem(
-        "categories",
-        JSON.stringify(response.data.categories)
-      );
-      localStorage.setItem("types", JSON.stringify(response.data.types));
-    } catch (error) {
-      console.log(error);
-      // Fallback to local storage if the API call fails
-      const localCategories = localStorage.getItem("categories");
-      if (localCategories) {
-        setCategories(JSON.parse(localCategories));
-      }
-
-      toast.error("Failed to fetch categories and types, using local data.", {
-        position: "bottom-center",
-        toastId: "uniqueToast",
-      });
-    }
+    const options = await expenseRepository.getFormOptions();
+    setCategories(options.categories);
   };
 
   const fetchExpense = async () => {
     if (!expenseId) return;
 
     try {
-      const response = await axios.get(`${apiUrl}/api/expenses/${expenseId}`);
+      const response = await expenseRepository.getExpense(expenseId);
+      if (!response) {
+        throw new Error("Expense not found locally.");
+      }
+
+      const formValues = expenseRepository.toFormValues(response);
       form.setValues({
-        amount: String(response.data.amount),
-        category: response.data.category,
-        type: response.data.type,
-        date: response.data.date.slice(0, 10),
-        paymentMethod: response.data.paymentMethod,
-        details: response.data.details || "",
-        account: response.data.account,
+        amount: String(formValues.amount),
+        category: formValues.category,
+        type: formValues.type,
+        date: formValues.date.slice(0, 10),
+        paymentMethod: formValues.paymentMethod,
+        details: formValues.details || "",
+        account: formValues.account,
       });
     } catch (error) {
       console.log(error);
-      toast.error("Failed to fetch expense data.", {
+      toast.error("Failed to load expense data from local storage.", {
         position: "bottom-center",
       });
       navigate("/");
@@ -163,19 +117,16 @@ const FormExpense = () => {
   };
 
   useEffect(() => {
-    fetchInitialData();
+    void fetchInitialData();
     if (isEditing) {
-      fetchExpense();
-    } else {
-      lookupPendingExpenses();
+      void fetchExpense();
     }
   }, [expenseId]);
 
   return (
     <form
       onSubmit={form.onSubmit((values) => {
-        sendData(values);
-        console.log(values);
+        void sendData(values);
       })}
     >
       <div className='max-w-sm mx-auto p-4'>

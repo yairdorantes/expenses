@@ -8,23 +8,21 @@ import {
   getCategoryIcon,
   getCategoryLabel,
 } from "../../categories";
+import type { LocalExpense, SyncState } from "../../../offline/types";
 
-interface Movement {
-  id: number;
-  amount: number;
-  date: string;
-  type: string;
-  category: string;
-  categoryName?: string;
-  details: string;
-}
 interface Props {
-  movement: Movement;
-  onClickCard: (id: number) => void;
-  onDelete: (id: number) => void;
-  onEdit: (id: number) => void;
-  active: number;
+  movement: LocalExpense;
+  onClickCard: (id: string) => void;
+  onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
+  active: string;
 }
+
+const syncLabels: Record<SyncState, { label: string; className: string }> = {
+  synced: { label: "", className: "" },
+  pending: { label: "Pending Sync", className: "text-yellow-300" },
+  failed: { label: "Sync Failed", className: "text-red-300" },
+};
 
 const MovementCard = ({
   movement,
@@ -35,18 +33,20 @@ const MovementCard = ({
 }: Props) => {
   const handleEdit = (event: MouseEvent) => {
     event.stopPropagation();
-    onEdit(movement.id);
+    onEdit(movement.localId);
   };
 
   const handleDelete = (event: MouseEvent) => {
     event.stopPropagation();
-    onDelete(movement.id);
+    onDelete(movement.localId);
   };
+
+  const syncLabel = syncLabels[movement.syncState];
 
   return (
     <div
       className='rounded-lg mb-2  bg-neutral-700'
-      onClick={() => onClickCard(movement.id)}
+      onClick={() => onClickCard(movement.localId)}
     >
       <div className='flex   border-opacity-20 p-4   justify-between'>
         <div className='flex gap-2'>
@@ -70,7 +70,14 @@ const MovementCard = ({
                 },
               ])}{" "}
             </div>
-            <small>{format(new Date(movement.date), "MMM d, yyyy")}</small>
+            <div className='flex flex-wrap items-center gap-x-2 gap-y-1'>
+              <small>{format(new Date(movement.date), "MMM d, yyyy")}</small>
+              {movement.syncState !== "synced" && (
+                <small className={`font-semibold ${syncLabel.className}`}>
+                  {syncLabel.label}
+                </small>
+              )}
+            </div>
           </div>
         </div>
         <div className='flex flex-col justify-between'>
@@ -106,9 +113,12 @@ const MovementCard = ({
         </div>
       </div>
 
-      {active === movement.id && (
+      {active === movement.localId && (
         <div className='text-center text-sm border-t p-2 border-gray-200 border-opacity-50'>
-          {movement.details}
+          <div>{movement.details}</div>
+          {movement.syncError && (
+            <div className='mt-1 text-red-300'>{movement.syncError}</div>
+          )}
         </div>
       )}
     </div>
