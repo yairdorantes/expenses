@@ -46,9 +46,15 @@ export interface SelectOption {
   label: string;
 }
 
+export interface AppConfig {
+  totalSavings: number;
+  fortnightlyBudget: number;
+}
+
 export interface FormOptions {
   categories: SelectOption[];
   types: SelectOption[];
+  config?: AppConfig;
 }
 
 export interface PeriodData {
@@ -56,6 +62,7 @@ export interface PeriodData {
   spent: number;
   remaining: number;
   previous_balance: number;
+  config: AppConfig;
   source: "local" | "server";
 }
 

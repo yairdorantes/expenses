@@ -3,6 +3,7 @@ import { apiClient, classifyApiError } from "./apiClient";
 import { localDb } from "./localDb";
 import { scheduleSync, syncService } from "./syncService";
 import type {
+  AppConfig,
   ExpenseFormValues,
   FormOptions,
   LocalExpense,
@@ -14,8 +15,10 @@ import type {
 const expenseTransactionId = "1";
 const lendMoneyCategoryId = "14";
 const paycheckCategoryId = "16";
-const defaultTotalSavings = 0;
-const defaultFortnightlyBudget = 7500;
+const defaultConfig: AppConfig = {
+  totalSavings: 0,
+  fortnightlyBudget: 7500,
+};
 
 const uuid = () => {
   if (crypto.randomUUID) return crypto.randomUUID();
@@ -137,7 +140,20 @@ const getPreviousPeriodRange = (period: number, month: number, year: number) => 
   };
 };
 
-const calculatePeriodData = (expenses: LocalExpense[], period: number, month: number, year: number): PeriodData => {
+const normalizeConfig = (config?: Partial<AppConfig>): AppConfig => ({
+  totalSavings: Number(config?.totalSavings ?? defaultConfig.totalSavings),
+  fortnightlyBudget: Number(
+    config?.fortnightlyBudget ?? defaultConfig.fortnightlyBudget
+  ),
+});
+
+const calculatePeriodData = (
+  expenses: LocalExpense[],
+  period: number,
+  month: number,
+  year: number,
+  config: AppConfig
+): PeriodData => {
   const activeExpenses = expenses.filter((expense) => !expense.deleted);
   const { start, end } = getPeriodRange(period, month, year);
   const previousRange = getPreviousPeriodRange(period, month, year);
@@ -172,13 +188,14 @@ const calculatePeriodData = (expenses: LocalExpense[], period: number, month: nu
   const savings = activeExpenses.reduce((total, expense) => {
     if (expense.category === paycheckCategoryId) return total + Number(expense.amount);
     return total;
-  }, defaultTotalSavings);
+  }, config.totalSavings);
 
   return {
     movements,
     spent,
     remaining: savings - allSpent,
-    previous_balance: defaultFortnightlyBudget - previousSpent,
+    previous_balance: config.fortnightlyBudget - previousSpent,
+    config,
     source: "local",
   };
 };
@@ -202,12 +219,26 @@ const cacheServerMovements = async (movements: ServerExpense[]) => {
 
 export const expenseRepository = {
   async getPeriodSummary(period: number, month: number, year: number) {
-    const localBeforeNetwork = calculatePeriodData(await localDb.getExpenses(), period, month, year);
+    const options = await this.getFormOptions();
+    const config = normalizeConfig(options.config);
+    const localBeforeNetwork = calculatePeriodData(
+      await localDb.getExpenses(),
+      period,
+      month,
+      year,
+      config
+    );
 
     try {
       const serverData = await apiClient.getPeriod(period, month, year);
       await cacheServerMovements(serverData.movements || []);
-      return calculatePeriodData(await localDb.getExpenses(), period, month, year);
+      return calculatePeriodData(
+        await localDb.getExpenses(),
+        period,
+        month,
+        year,
+        config
+      );
     } catch (error) {
       return {
         ...localBeforeNetwork,
@@ -235,6 +266,7 @@ export const expenseRepository = {
           { value: "1", label: "Expense" },
           { value: "2", label: "Income" },
         ],
+        config: defaultConfig,
       } satisfies FormOptions;
     }
   },

@@ -12,8 +12,6 @@ import { CiCalendar, CiCirclePlus } from "react-icons/ci";
 import { expenseRepository } from "../offline/expenseRepository";
 import type { ClassifiedError, LocalExpense, PeriodData } from "../offline/types";
 
-const budget = 6900;
-
 interface PiePiece {
   id: string;
 }
@@ -25,6 +23,10 @@ const emptyPeriodData: PeriodDataWithError = {
   spent: 0,
   remaining: 0,
   previous_balance: 0,
+  config: {
+    totalSavings: 0,
+    fortnightlyBudget: 7500,
+  },
   source: "local",
 };
 
@@ -141,6 +143,7 @@ const Home = () => {
     : "Synced";
   const networkColor =
     !navigator.onLine || pendingCount > 0 ? "text-yellow-300" : "text-green-300";
+  const budget = data.config.fortnightlyBudget;
 
   return (
     <div className='w-full overflow-x-hidden'>
