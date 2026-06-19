@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 
 class Config(models.Model):
@@ -39,6 +40,7 @@ class Type(models.Model):
 
 class Expense(models.Model):
 
+    client_id = models.UUIDField(default=uuid.uuid4, unique=True, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     type = models.ForeignKey(Type, on_delete=models.CASCADE)

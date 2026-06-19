@@ -1,9 +1,10 @@
 from datetime import date, timedelta
 import json
+import uuid
 from django.views import View
 import traceback
 from loguru import logger
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
 from expenses.tasks import process_recurring_transactions
@@ -25,20 +26,44 @@ class Expenses(View):
         return JsonResponse({})
 
     def post(self, request):
-        jd = json.loads(request.body)
-        # Normalize into a list
-        if isinstance(jd, dict):
-            jd = [jd]
+        try:
+            jd = json.loads(request.body)
+            # Normalize into a list
+            if isinstance(jd, dict):
+                jd = [jd]
 
-        for item in jd:
-            Expense.objects.create(**get_expense_data(item))
+            created_expenses = []
+            for item in jd:
+                client_id = get_client_id(item)
+                if client_id:
+                    existing = Expense.objects.filter(client_id=client_id).first()
+                    if existing:
+                        created_expenses.append(existing)
+                        continue
 
-        return HttpResponse("okis")
+                created_expenses.append(
+                    Expense.objects.create(**get_expense_data(item), client_id=client_id)
+                )
+
+            data = [serialize_expense(expense) for expense in created_expenses]
+            if len(data) == 1:
+                return JsonResponse(data[0], status=201)
+            return JsonResponse(data, safe=False, status=201)
+        except (
+            ValueError,
+            TypeError,
+            Category.DoesNotExist,
+            Type.DoesNotExist,
+            Method.DoesNotExist,
+            Account.DoesNotExist,
+        ) as e:
+            return JsonResponse({"error": str(e)}, status=400)
 
 
 def serialize_expense(expense):
     return {
         "id": expense.id,
+        "clientId": str(expense.client_id) if expense.client_id else None,
         "amount": float(expense.amount),
         "type": str(expense.type.id),
         "category": str(expense.category.id),
@@ -62,6 +87,13 @@ def get_expense_data(item):
     }
 
 
+def get_client_id(item):
+    raw_client_id = item.get("clientId") or item.get("client_id")
+    if not raw_client_id:
+        return None
+    return uuid.UUID(str(raw_client_id))
+
+
 class ExpenseDetail(View):
     def get(self, request, expense_id):
         expense = get_object_or_404(Expense, id=expense_id)
@@ -70,9 +102,13 @@ class ExpenseDetail(View):
     def put(self, request, expense_id):
         try:
             expense = get_object_or_404(Expense, id=expense_id)
-            expense_data = get_expense_data(json.loads(request.body))
+            body = json.loads(request.body)
+            expense_data = get_expense_data(body)
             for field, value in expense_data.items():
                 setattr(expense, field, value)
+            client_id = get_client_id(body)
+            if client_id:
+                expense.client_id = client_id
             expense.save()
             return JsonResponse(serialize_expense(expense))
         except Exception as e:
