@@ -78,6 +78,22 @@ const serverToLocalExpense = (server: ServerExpense, existing?: LocalExpense): L
   };
 };
 
+const hasServerChanges = (server: ServerExpense, existing: LocalExpense) => {
+  return (
+    existing.serverId !== server.id ||
+    existing.clientId !== (server.clientId || server.client_id || existing.clientId) ||
+    existing.amount !== Number(server.amount) ||
+    existing.category !== server.category ||
+    existing.type !== server.type ||
+    existing.date !== normalizeDate(server.date) ||
+    existing.paymentMethod !== server.paymentMethod ||
+    existing.details !== (server.details || "") ||
+    existing.account !== server.account ||
+    existing.categoryName !== server.categoryName ||
+    existing.deleted
+  );
+};
+
 const toFormValues = (expense: LocalExpense): ExpenseFormValues => ({
   amount: expense.amount,
   category: expense.category,
@@ -174,14 +190,14 @@ const cacheServerMovements = async (movements: ServerExpense[]) => {
         ? await localDb.findExpenseByClientId(movement.clientId || movement.client_id || "")
         : null) || (await localDb.findExpenseByServerId(movement.id));
 
-    if (existing?.syncState !== "synced") {
+    if (existing && existing.syncState !== "synced") {
       continue;
     }
 
-    await localDb.saveExpense(serverToLocalExpense(movement, existing), { silent: true });
+    if (!existing || hasServerChanges(movement, existing)) {
+      await localDb.saveExpense(serverToLocalExpense(movement, existing), { silent: true });
+    }
   }
-
-  window.dispatchEvent(new CustomEvent("expenses:local-change"));
 };
 
 export const expenseRepository = {

@@ -17,7 +17,9 @@ const openDb = () => {
       const db = request.result;
 
       if (!db.objectStoreNames.contains(expenseStore)) {
-        const store = db.createObjectStore(expenseStore, { keyPath: "localId" });
+        const store = db.createObjectStore(expenseStore, {
+          keyPath: "localId",
+        });
         store.createIndex("serverId", "serverId", { unique: false });
         store.createIndex("clientId", "clientId", { unique: true });
         store.createIndex("syncState", "syncState", { unique: false });
@@ -56,14 +58,20 @@ export const localDb = {
   async getExpenses() {
     const db = await openDb();
     return requestToPromise<LocalExpense[]>(
-      db.transaction(expenseStore, "readonly").objectStore(expenseStore).getAll()
+      db
+        .transaction(expenseStore, "readonly")
+        .objectStore(expenseStore)
+        .getAll(),
     );
   },
 
   async getExpense(localId: string) {
     const db = await openDb();
     const expense = await requestToPromise<LocalExpense | undefined>(
-      db.transaction(expenseStore, "readonly").objectStore(expenseStore).get(localId)
+      db
+        .transaction(expenseStore, "readonly")
+        .objectStore(expenseStore)
+        .get(localId),
     );
     return expense || null;
   },
@@ -71,7 +79,11 @@ export const localDb = {
   async findExpenseByServerId(serverId: number) {
     const db = await openDb();
     const expense = await requestToPromise<LocalExpense | undefined>(
-      db.transaction(expenseStore, "readonly").objectStore(expenseStore).index("serverId").get(serverId)
+      db
+        .transaction(expenseStore, "readonly")
+        .objectStore(expenseStore)
+        .index("serverId")
+        .get(serverId),
     );
     return expense || null;
   },
@@ -79,7 +91,11 @@ export const localDb = {
   async findExpenseByClientId(clientId: string) {
     const db = await openDb();
     const expense = await requestToPromise<LocalExpense | undefined>(
-      db.transaction(expenseStore, "readonly").objectStore(expenseStore).index("clientId").get(clientId)
+      db
+        .transaction(expenseStore, "readonly")
+        .objectStore(expenseStore)
+        .index("clientId")
+        .get(clientId),
     );
     return expense || null;
   },
@@ -107,8 +123,13 @@ export const localDb = {
 
   async getFormOptions() {
     const db = await openDb();
-    const item = await requestToPromise<{ key: string; value: FormOptions } | undefined>(
-      db.transaction(metadataStore, "readonly").objectStore(metadataStore).get("formOptions")
+    const item = await requestToPromise<
+      { key: string; value: FormOptions } | undefined
+    >(
+      db
+        .transaction(metadataStore, "readonly")
+        .objectStore(metadataStore)
+        .get("formOptions"),
     );
     return item?.value || null;
   },
@@ -116,7 +137,9 @@ export const localDb = {
   async saveFormOptions(options: FormOptions) {
     const db = await openDb();
     const transaction = db.transaction(metadataStore, "readwrite");
-    transaction.objectStore(metadataStore).put({ key: "formOptions", value: options });
+    transaction
+      .objectStore(metadataStore)
+      .put({ key: "formOptions", value: options });
     await transactionDone(transaction);
   },
 };
