@@ -238,7 +238,7 @@ class PeriodSummary(View):
 
             expenses = Expense.objects.filter(
                 date__range=(start_date, end_date)
-            ).order_by("-date")
+            ).order_by("-date",'-created_at')
             config = get_config_values()
 
             total = config["fortnightly_budget"]
