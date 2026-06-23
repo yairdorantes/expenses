@@ -46,7 +46,9 @@ class Expense(models.Model):
     type = models.ForeignKey(Type, on_delete=models.CASCADE)
     payment_method = models.ForeignKey(Method, on_delete=models.CASCADE)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    date = models.DateTimeField()
+    # An expense happens on a calendar day; storing a time creates avoidable
+    # timezone conversions in clients.
+    date = models.DateField()
     details = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
