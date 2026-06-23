@@ -5,6 +5,7 @@ import {
   Select,
   Textarea,
   Radio,
+  SegmentedControl,
   Group,
   Text,
   Flex,
@@ -36,11 +37,6 @@ const FormExpense = () => {
   const isEditing = Boolean(expenseId);
   const [loader, setLoader] = useState(false);
   const [categories, setCategories] = useState<SelectOption[]>([]);
-  const [paymentMethods] = useState([
-    { value: "1", label: "Cash" },
-    { value: "5", label: "Credit Card" },
-    { value: "3", label: "Debit Card" },
-  ]);
 
   const navigate = useNavigate();
   const form = useForm({
@@ -217,42 +213,22 @@ const FormExpense = () => {
           //   key={form.key("category")}
           //   {...form.getInputProps("category")}
         />
-        <Select
-          required
-          size='md'
-          searchable
-          clearable
-          leftSection={<MdCategory />}
-          label='Payment Method'
-          placeholder='Select a payment method'
-          //   description="expense amount"
-          onChange={(value) => {
-            form.setFieldValue("paymentMethod", value || "");
-          }}
-          value={form.values.paymentMethod}
-          description='Select the payment method that best fits your expense.'
-          data={paymentMethods}
-          inputWrapperOrder={["label", "error", "input", "description"]}
-          //   key={form.key("category")}
-          //   {...form.getInputProps("category")}
-        />
-        {/* <Select
-          size='md'
-          //   searchable
-          label='Payment method'
-          required
-          placeholder="payment's method"
-          onChange={(value) => {
-            form.setFieldValue("paymentMethod", value);
-          }}
-          leftSection={<MdOutlinePayments />}
-          //   description="expense amount"
-          description='payment method of amount'
-          data={paymentMethods}
-          inputWrapperOrder={["label", "error", "input", "description"]}
-          //   key={form.key("category")}
-          //   {...form.getInputProps("category")}
-        />{" "} */}
+        <div className='mt-2'>
+          <Text size='sm' fw={500} mb={4}>
+            Payment Method
+          </Text>
+          <SegmentedControl
+            fullWidth
+            value={form.values.paymentMethod}
+            onChange={(value) => form.setFieldValue("paymentMethod", value)}
+            aria-label='Payment Method'
+            data={[
+              { value: "1", label: "Cash" },
+              { value: "3", label: "Debit" },
+              { value: "5", label: "Credit" },
+            ]}
+          />
+        </div>
         <Radio.Group
           my={5}
           value={form.values.account}
