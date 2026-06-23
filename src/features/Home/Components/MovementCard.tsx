@@ -10,6 +10,14 @@ import {
 } from "../../categories";
 import type { LocalExpense, SyncState } from "../../../offline/types";
 
+// Expense dates are calendar dates, not instants. Parsing `YYYY-MM-DD` with
+// `new Date(value)` treats it as UTC midnight and can move it to the previous
+// day when rendered in a timezone west of UTC.
+const parseExpenseDate = (value: string) => {
+  const [year, month, day] = value.slice(0, 10).split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 interface Props {
   movement: LocalExpense;
   onClickCard: (id: string) => void;
@@ -71,7 +79,7 @@ const MovementCard = ({
               ])}{" "}
             </div>
             <div className='flex flex-wrap items-center gap-x-2 gap-y-1'>
-              <small>{format(new Date(movement.date), "MMM d, yyyy")}</small>
+              <small>{format(parseExpenseDate(movement.date), "MMM d, yyyy")}</small>
               {movement.syncState !== "synced" && (
                 <small className={`font-semibold ${syncLabel.className}`}>
                   {syncLabel.label}
