@@ -65,7 +65,7 @@ const withRetry = async <T>(operation: () => Promise<T>, attempts = 3): Promise<
       lastError = error;
       const classified = classifyApiError(error);
 
-      if (classified.type === "validation") {
+      if (classified.type === "validation" || classified.type === "offline") {
         throw error;
       }
 

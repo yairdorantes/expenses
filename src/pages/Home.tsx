@@ -119,14 +119,16 @@ const Home = () => {
 
     window.addEventListener("expenses:local-change", handleLocalChange);
 
-    void expenseRepository.processRecurringTransactions().then((error) => {
-      if (error) {
-        toast.info(error.message, {
-          position: "bottom-center",
-          toastId: "recurring-local-fallback",
-        });
-      }
-    });
+    if (navigator.onLine) {
+      void expenseRepository.processRecurringTransactions().then((error) => {
+        if (error && error.type !== "offline") {
+          toast.info(error.message, {
+            position: "bottom-center",
+            toastId: "recurring-transactions-error",
+          });
+        }
+      });
+    }
 
     return () => {
       window.removeEventListener("expenses:local-change", handleLocalChange);

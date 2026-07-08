@@ -46,7 +46,7 @@ const FormExpense = () => {
       category: "",
       type: "1",
       date: format(new Date(), "yyyy-MM-dd"),
-      paymentMethod: "3",
+      paymentMethod: "5",
       details: "",
       account: "7",
     },
@@ -65,7 +65,7 @@ const FormExpense = () => {
         isEditing
           ? "Expense updated locally. Sync will run automatically."
           : "Expense saved locally. Sync will run automatically.",
-        { position: "bottom-center" }
+        { position: "bottom-center" },
       );
       form.reset();
       navigate("/");
