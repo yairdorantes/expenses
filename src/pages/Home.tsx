@@ -120,14 +120,7 @@ const Home = () => {
     window.addEventListener("expenses:local-change", handleLocalChange);
 
     if (navigator.onLine) {
-      void expenseRepository.processRecurringTransactions().then((error) => {
-        if (error && error.type !== "offline") {
-          toast.info(error.message, {
-            position: "bottom-center",
-            toastId: "recurring-transactions-error",
-          });
-        }
-      });
+      void expenseRepository.processRecurringTransactions();
     }
 
     return () => {
