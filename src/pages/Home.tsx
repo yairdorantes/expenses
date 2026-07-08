@@ -9,6 +9,7 @@ import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
 import { IoWalletOutline } from "react-icons/io5";
 import { CiCalendar, CiCirclePlus } from "react-icons/ci";
+import { LuServerOff } from "react-icons/lu";
 import { expenseRepository } from "../offline/expenseRepository";
 import type { ClassifiedError, LocalExpense, PeriodData } from "../offline/types";
 
@@ -17,6 +18,9 @@ interface PiePiece {
 }
 
 type PeriodDataWithError = PeriodData & { error?: ClassifiedError };
+type ConnectivityIssue = "offline" | "server" | null;
+
+const connectivityWarningKey = "expenses:connectivity-warning-shown";
 
 const emptyPeriodData: PeriodDataWithError = {
   movements: [],
@@ -36,6 +40,9 @@ const Home = () => {
   const [movements, setMovements] = useState<LocalExpense[]>([]);
   const [activeMovement, setActiveMovement] = useState("");
   const [toggleSummary, setToggleSummary] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [connectivityIssue, setConnectivityIssue] =
+    useState<ConnectivityIssue>(navigator.onLine ? null : "offline");
 
   const getData = async () => {
     const currentYear = new Date().getFullYear();
@@ -52,10 +59,25 @@ const Home = () => {
     setData(nextData);
     setMovements(nextData.movements);
 
-    if (nextData.error) {
+    if (nextData.error?.type === "offline") {
+      setConnectivityIssue("offline");
+    } else if (
+      nextData.error?.type === "server" ||
+      nextData.error?.type === "timeout"
+    ) {
+      setConnectivityIssue("server");
+    } else if (!nextData.error) {
+      setConnectivityIssue(null);
+    }
+
+    if (
+      nextData.error &&
+      !sessionStorage.getItem(connectivityWarningKey)
+    ) {
+      sessionStorage.setItem(connectivityWarningKey, "true");
       toast.info(nextData.error.message, {
         position: "bottom-center",
-        toastId: "period-local-fallback",
+        toastId: "connectivity-warning",
       });
     }
   };
@@ -116,8 +138,18 @@ const Home = () => {
     const handleLocalChange = () => {
       void getData();
     };
+    const handleOnline = () => {
+      setIsOnline(true);
+      void getData();
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setConnectivityIssue("offline");
+    };
 
     window.addEventListener("expenses:local-change", handleLocalChange);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     if (navigator.onLine) {
       void expenseRepository.processRecurringTransactions();
@@ -125,19 +157,25 @@ const Home = () => {
 
     return () => {
       window.removeEventListener("expenses:local-change", handleLocalChange);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
   const pendingCount = data.movements.filter(
     (movement) => movement.syncState !== "synced"
   ).length;
-  const networkLabel = !navigator.onLine
+  const networkLabel = !isOnline || connectivityIssue === "offline"
     ? "Offline"
+    : connectivityIssue === "server"
+    ? `${pendingCount} pending`
     : pendingCount > 0
     ? `${pendingCount} pending`
     : "Synced";
   const networkColor =
-    !navigator.onLine || pendingCount > 0 ? "text-yellow-300" : "text-green-300";
+    !isOnline || connectivityIssue || pendingCount > 0
+      ? "text-yellow-300"
+      : "text-green-300";
   const budget = data.config.fortnightlyBudget;
 
   return (
@@ -146,7 +184,15 @@ const Home = () => {
         <div>
           <div className='flex items-center justify-between'>
             <h4>Total</h4>
-            <small className={`font-semibold ${networkColor}`}>
+            <small
+              className={`flex items-center gap-1 font-semibold ${networkColor}`}
+              title={
+                connectivityIssue === "server" ? "Server unavailable" : undefined
+              }
+            >
+              {isOnline && connectivityIssue === "server" && (
+                <LuServerOff aria-label='Server unavailable' size={15} />
+              )}
               {networkLabel}
             </small>
           </div>
