@@ -118,7 +118,7 @@ export const localDb = {
 
   async getPendingExpenses() {
     const expenses = await this.getExpenses();
-    return expenses.filter((expense) => expense.syncState !== "synced");
+    return expenses.filter((expense) => expense.syncState === "pending");
   },
 
   async getFormOptions() {

@@ -48,12 +48,16 @@ const mergeServerFields = (local: LocalExpense, server: ServerExpense | null): L
   };
 };
 
-const markFailed = async (expense: LocalExpense, error: unknown, syncState: SyncState = "failed") => {
+const markFailed = async (
+  expense: LocalExpense,
+  error: unknown,
+  syncState: SyncState = "failed"
+) => {
   const classified = classifyApiError(error);
   await localDb.saveExpense({
     ...expense,
     syncState,
-    syncError: classified.message,
+    syncError: syncState === "failed" ? classified.message : undefined,
     updatedAt: new Date().toISOString(),
   });
 };
@@ -104,7 +108,7 @@ export const syncService = {
         const classified = classifyApiError(error);
         const isValidation = classified.type === "validation";
         hadRetryableFailure = hadRetryableFailure || !isValidation;
-        await markFailed(expense, error);
+        await markFailed(expense, error, isValidation ? "failed" : "pending");
       }
     }
 

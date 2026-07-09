@@ -9,9 +9,13 @@ import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
 import { IoWalletOutline } from "react-icons/io5";
 import { CiCalendar, CiCirclePlus } from "react-icons/ci";
-import { LuServerOff } from "react-icons/lu";
+import { IoCloudOfflineOutline } from "react-icons/io5";
 import { expenseRepository } from "../offline/expenseRepository";
-import type { ClassifiedError, LocalExpense, PeriodData } from "../offline/types";
+import type {
+  ClassifiedError,
+  LocalExpense,
+  PeriodData,
+} from "../offline/types";
 
 interface PiePiece {
   id: string;
@@ -41,21 +45,22 @@ const Home = () => {
   const [activeMovement, setActiveMovement] = useState("");
   const [toggleSummary, setToggleSummary] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [connectivityIssue, setConnectivityIssue] =
-    useState<ConnectivityIssue>(navigator.onLine ? null : "offline");
+  const [connectivityIssue, setConnectivityIssue] = useState<ConnectivityIssue>(
+    navigator.onLine ? null : "offline",
+  );
 
-  const getData = async () => {
+  const getCurrentPeriod = () => {
     const currentYear = new Date().getFullYear();
     const today = new Date();
     const day = today.getDate();
-    const period = day <= 15 ? 1 : 2;
-    const month = today.getMonth() + 1;
-    const nextData = await expenseRepository.getPeriodSummary(
-      period,
-      month,
-      currentYear
-    );
+    return {
+      currentYear,
+      period: day <= 15 ? 1 : 2,
+      month: today.getMonth() + 1,
+    };
+  };
 
+  const applyPeriodData = (nextData: PeriodDataWithError) => {
     setData(nextData);
     setMovements(nextData.movements);
 
@@ -69,11 +74,27 @@ const Home = () => {
     } else if (!nextData.error) {
       setConnectivityIssue(null);
     }
+  };
 
-    if (
-      nextData.error &&
-      !sessionStorage.getItem(connectivityWarningKey)
-    ) {
+  const getData = async () => {
+    const { period, month, currentYear } = getCurrentPeriod();
+    const localData = await expenseRepository.getLocalPeriodSummary(
+      period,
+      month,
+      currentYear,
+    );
+
+    applyPeriodData(localData);
+
+    const nextData = await expenseRepository.getPeriodSummary(
+      period,
+      month,
+      currentYear,
+    );
+
+    applyPeriodData(nextData);
+
+    if (nextData.error && !sessionStorage.getItem(connectivityWarningKey)) {
       sessionStorage.setItem(connectivityWarningKey, "true");
       toast.info(nextData.error.message, {
         position: "bottom-center",
@@ -84,7 +105,7 @@ const Home = () => {
 
   const handleClickPiece = (piece: PiePiece) => {
     const newData = data.movements.filter(
-      (movement) => movement.category === piece.id
+      (movement) => movement.category === piece.id,
     );
     setMovements(newData);
   };
@@ -163,15 +184,16 @@ const Home = () => {
   }, []);
 
   const pendingCount = data.movements.filter(
-    (movement) => movement.syncState !== "synced"
+    (movement) => movement.syncState !== "synced",
   ).length;
-  const networkLabel = !isOnline || connectivityIssue === "offline"
-    ? "Offline"
-    : connectivityIssue === "server"
-    ? `${pendingCount} pending`
-    : pendingCount > 0
-    ? `${pendingCount} pending`
-    : "Synced";
+  const networkLabel =
+    !isOnline || connectivityIssue === "offline"
+      ? "Offline"
+      : connectivityIssue === "server"
+        ? `${pendingCount} pending`
+        : pendingCount > 0
+          ? `${pendingCount} pending`
+          : "Synced";
   const networkColor =
     !isOnline || connectivityIssue || pendingCount > 0
       ? "text-yellow-300"
@@ -187,11 +209,16 @@ const Home = () => {
             <small
               className={`flex items-center gap-1 font-semibold ${networkColor}`}
               title={
-                connectivityIssue === "server" ? "Server unavailable" : undefined
+                connectivityIssue === "server"
+                  ? "Server unavailable"
+                  : undefined
               }
             >
               {isOnline && connectivityIssue === "server" && (
-                <LuServerOff aria-label='Server unavailable' size={15} />
+                <IoCloudOfflineOutline
+                  aria-label='Server unavailable'
+                  size={15}
+                />
               )}
               {networkLabel}
             </small>

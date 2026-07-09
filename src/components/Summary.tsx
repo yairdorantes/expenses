@@ -11,14 +11,19 @@ const Summary = () => {
     const today = new Date();
     const period = today.getDate() <= 15 ? 1 : 2;
     const month = today.getMonth() + 1;
+    const applyData = (data: { remaining: number; spent: number }) => {
+      setTotal(data.remaining + data.spent);
+      setSpent(data.spent);
+      setRemaining(data.remaining);
+    };
+
+    void expenseRepository
+      .getLocalPeriodSummary(period, month, currentYear)
+      .then(applyData);
 
     void expenseRepository
       .getPeriodSummary(period, month, currentYear)
-      .then((data) => {
-        setTotal(data.remaining + data.spent);
-        setSpent(data.spent);
-        setRemaining(data.remaining);
-      });
+      .then(applyData);
   }, []);
 
   return (

@@ -217,7 +217,23 @@ const cacheServerMovements = async (movements: ServerExpense[]) => {
   }
 };
 
+const getLocalConfig = async () => {
+  const cached = await localDb.getFormOptions();
+  return normalizeConfig(cached?.config);
+};
+
 export const expenseRepository = {
+  async getLocalPeriodSummary(period: number, month: number, year: number) {
+    const config = await getLocalConfig();
+    return calculatePeriodData(
+      await localDb.getExpenses(),
+      period,
+      month,
+      year,
+      config
+    );
+  },
+
   async getPeriodSummary(period: number, month: number, year: number) {
     const options = await this.getFormOptions();
     const config = normalizeConfig(options.config);
@@ -232,13 +248,16 @@ export const expenseRepository = {
     try {
       const serverData = await apiClient.getPeriod(period, month, year);
       await cacheServerMovements(serverData.movements || []);
-      return calculatePeriodData(
-        await localDb.getExpenses(),
-        period,
-        month,
-        year,
-        config
-      );
+      return {
+        ...calculatePeriodData(
+          await localDb.getExpenses(),
+          period,
+          month,
+          year,
+          config
+        ),
+        source: "server",
+      };
     } catch (error) {
       return {
         ...localBeforeNetwork,
