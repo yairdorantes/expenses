@@ -1,5 +1,11 @@
 import axios, { AxiosError } from "axios";
-import type { ClassifiedError, ExpenseFormValues, FormOptions, ServerExpense } from "./types";
+import type {
+  AppConfig,
+  ClassifiedError,
+  ExpenseFormValues,
+  FormOptions,
+  ServerExpense,
+} from "./types";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const timeoutMs = 10_000;
@@ -93,6 +99,11 @@ export const apiClient = {
 
   async getFormOptions() {
     const response = await withRetry(() => client.get("/api/form"));
+    return response.data as FormOptions;
+  },
+
+  async updateConfig(config: Partial<AppConfig>) {
+    const response = await withRetry(() => client.post("/api/form", config), 1);
     return response.data as FormOptions;
   },
 

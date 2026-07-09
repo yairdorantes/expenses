@@ -334,6 +334,19 @@ export const expenseRepository = {
     return this.getFormOptions();
   },
 
+  async updateSavings(totalSavings: number) {
+    const cached = await localDb.getFormOptions();
+    const nextConfig = normalizeConfig({
+      ...cached?.config,
+      totalSavings,
+    });
+    const serverOptions = await apiClient.updateConfig({
+      totalSavings: nextConfig.totalSavings,
+    });
+    await localDb.saveFormOptions(serverOptions);
+    return serverOptions;
+  },
+
   async processRecurringTransactions() {
     try {
       await apiClient.processRecurringTransactions();

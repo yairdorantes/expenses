@@ -142,4 +142,20 @@ export const localDb = {
       .put({ key: "formOptions", value: options });
     await transactionDone(transaction);
   },
+
+  async resetDatabase() {
+    const db = await openDb();
+    db.close();
+    dbPromise = null;
+
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.deleteDatabase(dbName);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+      request.onblocked = () =>
+        reject(new Error("Could not reset local cache because the database is busy."));
+    });
+
+    broadcastChange();
+  },
 };

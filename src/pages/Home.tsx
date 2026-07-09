@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import MovementCard from "../features/Home/Components/MovementCard";
 import SlotCounter from "react-slot-counter";
-import { ActionIcon, Progress } from "@mantine/core";
+import { ActionIcon, Button, Modal, NumberInput, Progress } from "@mantine/core";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import PieChartHome from "../features/Home/Components/PieChartHome";
@@ -10,7 +10,9 @@ import { toast } from "react-toastify";
 import { IoWalletOutline } from "react-icons/io5";
 import { CiCalendar, CiCirclePlus } from "react-icons/ci";
 import { IoCloudOfflineOutline } from "react-icons/io5";
+import { FiEdit2 } from "react-icons/fi";
 import { expenseRepository } from "../offline/expenseRepository";
+import { localDb } from "../offline/localDb";
 import type {
   ClassifiedError,
   LocalExpense,
@@ -48,6 +50,12 @@ const Home = () => {
   const [connectivityIssue, setConnectivityIssue] = useState<ConnectivityIssue>(
     navigator.onLine ? null : "offline",
   );
+  const [isSavingsModalOpen, setIsSavingsModalOpen] = useState(false);
+  const [savingsInput, setSavingsInput] = useState<string | number>(
+    emptyPeriodData.config.totalSavings,
+  );
+  const [isSavingSavings, setIsSavingSavings] = useState(false);
+  const [isResettingCache, setIsResettingCache] = useState(false);
 
   const getCurrentPeriod = () => {
     const currentYear = new Date().getFullYear();
@@ -150,6 +158,62 @@ const Home = () => {
     }
   };
 
+  const openSavingsModal = () => {
+    setSavingsInput(data.config.totalSavings);
+    setIsSavingsModalOpen(true);
+  };
+
+  const handleSaveSavings = async () => {
+    const nextSavings = Number(savingsInput);
+
+    if (!Number.isFinite(nextSavings) || nextSavings < 0) {
+      toast.error("Enter a valid savings amount.", {
+        position: "bottom-center",
+      });
+      return;
+    }
+
+    setIsSavingSavings(true);
+
+    try {
+      await expenseRepository.updateSavings(nextSavings);
+      setIsSavingsModalOpen(false);
+      await getData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not update savings right now.", {
+        position: "bottom-center",
+      });
+    } finally {
+      setIsSavingSavings(false);
+    }
+  };
+
+  const handleResetLocalCache = async () => {
+    const shouldReset = window.confirm(
+      "Reset local cache on this device and reload from server? Unsynced local changes on this device will be lost.",
+    );
+    if (!shouldReset) return;
+
+    setIsResettingCache(true);
+
+    try {
+      await localDb.resetDatabase();
+      sessionStorage.removeItem(connectivityWarningKey);
+      await getData();
+      toast.info("Local cache was reset for this device.", {
+        position: "bottom-center",
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not reset the local cache.", {
+        position: "bottom-center",
+      });
+    } finally {
+      setIsResettingCache(false);
+    }
+  };
+
   useEffect(() => {
     void getData();
 
@@ -199,6 +263,51 @@ const Home = () => {
 
   return (
     <div className='w-full overflow-x-hidden'>
+      <Modal
+        opened={isSavingsModalOpen}
+        onClose={() => setIsSavingsModalOpen(false)}
+        centered
+        title='Update savings'
+      >
+        <div className='space-y-4'>
+          <NumberInput
+            label='Current savings amount'
+            value={savingsInput}
+            onChange={setSavingsInput}
+            min={0}
+            thousandSeparator=','
+            decimalScale={2}
+            fixedDecimalScale
+            allowNegative={false}
+            hideControls
+          />
+          <div className='flex justify-end gap-2'>
+            <Button
+              variant='subtle'
+              color='red'
+              loading={isResettingCache}
+              onClick={() => void handleResetLocalCache()}
+            >
+              Reset cache
+            </Button>
+            <Button
+              variant='subtle'
+              color='gray'
+              onClick={() => setIsSavingsModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              color='green'
+              loading={isSavingSavings}
+              onClick={() => void handleSaveSavings()}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       <main className='w-full max-w-lg mx-auto p-3 sm:p-4 border border-gray-400 rounded-lg mb-5'>
         <div>
           <div className='flex items-center justify-between'>
@@ -238,6 +347,17 @@ const Home = () => {
                   />
                 )}
               </span>
+              {!toggleSummary && (
+                <ActionIcon
+                  aria-label='Update savings amount'
+                  color='gray'
+                  size='sm'
+                  variant='subtle'
+                  onClick={openSavingsModal}
+                >
+                  <FiEdit2 />
+                </ActionIcon>
+              )}
               <small className='text-red-500 text-xs sm:text-sm whitespace-nowrap'>
                 - ${data.spent.toLocaleString()}
               </small>
