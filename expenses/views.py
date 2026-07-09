@@ -23,6 +23,27 @@ def get_config_values():
     }
 
 
+def serialize_form_payload(config):
+    categories = Category.objects.all()
+    types = Type.objects.all()
+    categories_data = [
+        {"value": str(category.id), "label": category.name}
+        for category in categories
+    ]
+    types_data = [{"value": str(type.id), "label": type.name} for type in types]
+
+    return {
+        "categories": categories_data,
+        "types": types_data,
+        "config": {
+            "totalSavings": config.total_savings if config else 0,
+            "fortnightlyBudget": (
+                config.fortnightly_budget if config else 7500
+            ),
+        },
+    }
+
+
 class Expenses(View):
     def get(self, request):
 
@@ -127,27 +148,23 @@ class ExpenseDetail(View):
 
 class Form(View):
     def get(self, request):
-        categories = Category.objects.all()
-        types = Type.objects.all()
         config = Config.objects.first()
-        categories_data = [
-            {"value": str(category.id), "label": category.name}
-            for category in categories
-        ]
-        types_data = [{"value": str(type.id), "label": type.name} for type in types]
+        return JsonResponse(serialize_form_payload(config))
 
-        return JsonResponse(
-            {
-                "categories": categories_data,
-                "types": types_data,
-                "config": {
-                    "totalSavings": config.total_savings if config else 0,
-                    "fortnightlyBudget": (
-                        config.fortnightly_budget if config else 7500
-                    ),
-                },
-            }
-        )
+    def post(self, request):
+        try:
+            body = json.loads(request.body)
+            config = Config.objects.first() or Config()
+
+            if "totalSavings" in body:
+                config.total_savings = int(body.get("totalSavings") or 0)
+            if "fortnightlyBudget" in body:
+                config.fortnightly_budget = int(body.get("fortnightlyBudget") or 0)
+
+            config.save()
+            return JsonResponse(serialize_form_payload(config))
+        except (TypeError, ValueError) as e:
+            return JsonResponse({"error": str(e)}, status=400)
 
 
 class Summary(View):
