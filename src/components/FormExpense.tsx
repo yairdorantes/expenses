@@ -61,12 +61,6 @@ const FormExpense = () => {
         await expenseRepository.createExpense(formData);
       }
 
-      toast.success(
-        isEditing
-          ? "Expense updated locally. Sync will run automatically."
-          : "Expense saved locally. Sync will run automatically.",
-        { position: "bottom-center" },
-      );
       form.reset();
       navigate("/");
     } catch (error) {

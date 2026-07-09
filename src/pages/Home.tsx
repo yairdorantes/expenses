@@ -138,9 +138,6 @@ const Home = () => {
 
     try {
       await expenseRepository.deleteExpense(id);
-      toast.success("Expense deleted locally. Sync will run automatically.", {
-        position: "bottom-center",
-      });
 
       if (activeMovement === id) {
         setActiveMovement("");
