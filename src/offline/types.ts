@@ -49,6 +49,7 @@ export interface SelectOption {
 export interface AppConfig {
   totalSavings: number;
   fortnightlyBudget: number;
+  closingDate?: string | null;
 }
 
 export interface FormOptions {

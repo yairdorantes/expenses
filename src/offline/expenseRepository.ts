@@ -18,6 +18,7 @@ const paycheckCategoryId = "16";
 const defaultConfig: AppConfig = {
   totalSavings: 0,
   fortnightlyBudget: 7500,
+  closingDate: null,
 };
 
 const uuid = () => {
@@ -145,6 +146,7 @@ const normalizeConfig = (config?: Partial<AppConfig>): AppConfig => ({
   fortnightlyBudget: Number(
     config?.fortnightlyBudget ?? defaultConfig.fortnightlyBudget
   ),
+  closingDate: config?.closingDate || defaultConfig.closingDate,
 });
 
 const calculatePeriodData = (
@@ -155,6 +157,11 @@ const calculatePeriodData = (
   config: AppConfig
 ): PeriodData => {
   const activeExpenses = expenses.filter((expense) => !expense.deleted);
+  const balanceExpenses = config.closingDate
+    ? activeExpenses.filter(
+        (expense) => normalizeDate(expense.date) >= config.closingDate!
+      )
+    : activeExpenses;
   const { start, end } = getPeriodRange(period, month, year);
   const previousRange = getPreviousPeriodRange(period, month, year);
   const movements = activeExpenses
@@ -179,13 +186,13 @@ const calculatePeriodData = (
     return total;
   }, 0);
 
-  const allSpent = activeExpenses.reduce((total, expense) => {
+  const allSpent = balanceExpenses.reduce((total, expense) => {
     if (expense.type === expenseTransactionId) return total + Number(expense.amount);
     if (expense.type === "2" && expense.category !== paycheckCategoryId) return total - Number(expense.amount);
     return total;
   }, 0);
 
-  const savings = activeExpenses.reduce((total, expense) => {
+  const savings = balanceExpenses.reduce((total, expense) => {
     if (expense.category === paycheckCategoryId) return total + Number(expense.amount);
     return total;
   }, config.totalSavings);
