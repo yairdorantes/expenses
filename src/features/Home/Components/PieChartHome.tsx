@@ -175,10 +175,16 @@ const PieChartHome = ({ movements = [], handleClickPiece, reset }: Props) => {
             {chartData.map((entry, index) => (
               <Cell
                 onClick={() => {
-                  console.log(entry);
-                  handleClickPiece(entry);
+                  const isSameSlice = sliceSelected?.id === entry.id;
+
+                  if (isSameSlice) {
+                    setSliceSelected(null);
+                    reset();
+                    return;
+                  }
+
                   setSliceSelected(entry);
-                  sliceSelected?.id === entry.id && reset();
+                  handleClickPiece(entry);
                 }}
                 key={`cell-${index}`}
                 fill={getCategoryColor(entry.id, entry.name)}
