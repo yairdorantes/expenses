@@ -43,7 +43,8 @@ const mergeServerFields = (local: LocalExpense, server: ServerExpense | null): L
     pendingOperation: null,
     deleted: false,
     syncError: undefined,
-    updatedAt: now,
+    createdAt: server?.createdAt || local.createdAt,
+    updatedAt: server?.updatedAt || now,
     lastSyncedAt: now,
   };
 };

@@ -18,7 +18,8 @@ const paycheckCategoryId = "16";
 const defaultConfig: AppConfig = {
   totalSavings: 0,
   fortnightlyBudget: 7500,
-  closingDate: null,
+  closingAt: null,
+  closingDay: null,
 };
 
 const uuid = () => {
@@ -76,8 +77,8 @@ const serverToLocalExpense = (server: ServerExpense, existing?: LocalExpense): L
     pendingOperation: null,
     deleted: false,
     syncError: undefined,
-    createdAt: existing?.createdAt || now,
-    updatedAt: now,
+    createdAt: server.createdAt || existing?.createdAt || now,
+    updatedAt: server.updatedAt || now,
     lastSyncedAt: now,
   };
 };
@@ -141,13 +142,23 @@ const getPreviousPeriodRange = (period: number, month: number, year: number) => 
   };
 };
 
-const normalizeConfig = (config?: Partial<AppConfig>): AppConfig => ({
-  totalSavings: Number(config?.totalSavings ?? defaultConfig.totalSavings),
-  fortnightlyBudget: Number(
-    config?.fortnightlyBudget ?? defaultConfig.fortnightlyBudget
-  ),
-  closingDate: config?.closingDate || defaultConfig.closingDate,
-});
+const normalizeConfig = (config?: Partial<AppConfig>): AppConfig => {
+  const legacyClosingDate = (
+    config as (AppConfig & { closingDate?: string | null }) | undefined
+  )?.closingDate;
+
+  return {
+    totalSavings: Number(config?.totalSavings ?? defaultConfig.totalSavings),
+    fortnightlyBudget: Number(
+      config?.fortnightlyBudget ?? defaultConfig.fortnightlyBudget
+    ),
+    closingAt: config?.closingAt || legacyClosingDate || defaultConfig.closingAt,
+    closingDay:
+      config?.closingDay ||
+      (legacyClosingDate ? legacyClosingDate.slice(0, 10) : null) ||
+      defaultConfig.closingDay,
+  };
+};
 
 const calculatePeriodData = (
   expenses: LocalExpense[],
@@ -157,10 +168,15 @@ const calculatePeriodData = (
   config: AppConfig
 ): PeriodData => {
   const activeExpenses = expenses.filter((expense) => !expense.deleted);
-  const balanceExpenses = config.closingDate
-    ? activeExpenses.filter(
-        (expense) => normalizeDate(expense.date) >= config.closingDate!
-      )
+  const closingAt = config.closingAt ? new Date(config.closingAt) : null;
+  const closingDay = config.closingDay || null;
+  const balanceExpenses = closingAt && closingDay
+    ? activeExpenses.filter((expense) => {
+        const createdAt = expense.createdAt ? new Date(expense.createdAt) : null;
+        const createdAfterClosing = createdAt ? createdAt >= closingAt : false;
+        const datedAfterClosingDay = normalizeDate(expense.date) > closingDay;
+        return createdAfterClosing || datedAfterClosingDay;
+      })
     : activeExpenses;
   const { start, end } = getPeriodRange(period, month, year);
   const previousRange = getPreviousPeriodRange(period, month, year);

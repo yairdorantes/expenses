@@ -39,6 +39,8 @@ export interface ServerExpense {
   paymentMethod: string;
   details?: string | null;
   account: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface SelectOption {
@@ -49,7 +51,8 @@ export interface SelectOption {
 export interface AppConfig {
   totalSavings: number;
   fortnightlyBudget: number;
-  closingDate?: string | null;
+  closingAt?: string | null;
+  closingDay?: string | null;
 }
 
 export interface FormOptions {
