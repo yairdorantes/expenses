@@ -86,30 +86,73 @@ export const syncService = {
     let hadRetryableFailure = false;
 
     for (const expense of pending) {
+      const currentExpense = await localDb.getExpense(expense.localId);
+      if (!currentExpense) {
+        continue;
+      }
+
       try {
-        if (expense.pendingOperation === "delete") {
-          if (expense.serverId) {
-            await apiClient.deleteExpense(expense.serverId);
+        if (currentExpense.pendingOperation === "delete") {
+          if (currentExpense.serverId) {
+            await apiClient.deleteExpense(currentExpense.serverId);
           }
-          await localDb.deleteExpense(expense.localId);
+          await localDb.deleteExpense(currentExpense.localId);
           continue;
         }
 
-        if (expense.pendingOperation === "create" || !expense.serverId) {
-          const response = await apiClient.createExpense(toServerPayload(expense));
-          await localDb.saveExpense(mergeServerFields(expense, firstServerExpense(response)));
+        if (currentExpense.pendingOperation === "create" || !currentExpense.serverId) {
+          const response = await apiClient.createExpense(toServerPayload(currentExpense));
+          const serverExpense = firstServerExpense(response);
+          const latestExpense = await localDb.getExpense(currentExpense.localId);
+
+          if (!latestExpense) {
+            if (serverExpense?.id) {
+              await apiClient.deleteExpense(serverExpense.id);
+            }
+            continue;
+          }
+
+          if (latestExpense.pendingOperation === "delete" || latestExpense.deleted) {
+            if (serverExpense?.id) {
+              await apiClient.deleteExpense(serverExpense.id);
+            }
+            await localDb.deleteExpense(latestExpense.localId);
+            continue;
+          }
+
+          await localDb.saveExpense(
+            mergeServerFields(latestExpense, serverExpense)
+          );
           continue;
         }
 
-        if (expense.pendingOperation === "update") {
-          const response = await apiClient.updateExpense(expense.serverId, toServerPayload(expense));
-          await localDb.saveExpense(mergeServerFields(expense, response));
+        if (currentExpense.pendingOperation === "update") {
+          const response = await apiClient.updateExpense(
+            currentExpense.serverId,
+            toServerPayload(currentExpense)
+          );
+          const latestExpense = await localDb.getExpense(currentExpense.localId);
+
+          if (!latestExpense) {
+            continue;
+          }
+
+          if (latestExpense.pendingOperation === "delete" || latestExpense.deleted) {
+            if (latestExpense.serverId) {
+              await apiClient.deleteExpense(latestExpense.serverId);
+            }
+            await localDb.deleteExpense(latestExpense.localId);
+            continue;
+          }
+
+          await localDb.saveExpense(mergeServerFields(latestExpense, response));
         }
       } catch (error) {
         const classified = classifyApiError(error);
         const isValidation = classified.type === "validation";
         hadRetryableFailure = hadRetryableFailure || !isValidation;
-        await markFailed(expense, error, isValidation ? "failed" : "pending");
+        const latestExpense = (await localDb.getExpense(expense.localId)) || expense;
+        await markFailed(latestExpense, error, isValidation ? "failed" : "pending");
       }
     }
 
