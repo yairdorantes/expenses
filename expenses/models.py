@@ -3,8 +3,8 @@ import uuid
 
 
 class Config(models.Model):
-    total_savings = models.PositiveIntegerField(default=0)
-    fortnightly_budget = models.PositiveIntegerField(default=7500)
+    total_savings = models.DecimalField(max_digits=12,decimal_places=2,default=0)
+    fortnightly_budget = models.DecimalField(max_digits=12,decimal_places=2)
     closing_at = models.DateTimeField(null=True, blank=True)
     closing_day = models.DateField(null=True, blank=True)
 
