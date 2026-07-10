@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
 import json
 import uuid
 from django.views import View
@@ -15,6 +16,13 @@ from calendar import monthrange
 
 EXPENSE_TRANSACTION_ID = 1  # THIS IS FOR EXPENSES
 LEND_MONEY_CATEGORY_ID = 14
+
+
+def parse_decimal_amount(value, default="0"):
+    raw_value = default if value in (None, "") else value
+    return Decimal(str(raw_value))
+
+
 def get_config_values():
     config = Config.objects.first()
     return {
@@ -163,15 +171,17 @@ class Form(View):
             config = Config.objects.first() or Config()
 
             if "totalSavings" in body:
-                config.total_savings = int(body.get("totalSavings") or 0)
+                config.total_savings = parse_decimal_amount(body.get("totalSavings"))
                 config.closing_at = timezone.now()
                 config.closing_day = timezone.localdate()
             if "fortnightlyBudget" in body:
-                config.fortnightly_budget = int(body.get("fortnightlyBudget") or 0)
+                config.fortnightly_budget = parse_decimal_amount(
+                    body.get("fortnightlyBudget")
+                )
 
             config.save()
             return JsonResponse(serialize_form_payload(config))
-        except (TypeError, ValueError) as e:
+        except (TypeError, ValueError, InvalidOperation) as e:
             return JsonResponse({"error": str(e)}, status=400)
 
 
