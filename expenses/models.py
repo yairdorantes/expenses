@@ -5,13 +5,15 @@ import uuid
 class Config(models.Model):
     total_savings = models.PositiveIntegerField(default=0)
     fortnightly_budget = models.PositiveIntegerField(default=7500)
-    closing_date = models.DateField(null=True, blank=True)
+    closing_at = models.DateTimeField(null=True, blank=True)
+    closing_day = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return (
             f"Total Savings: {self.total_savings}, "
             f"Fortnightly Budget: {self.fortnightly_budget}, "
-            f"Closing Date: {self.closing_date}"
+            f"Closing At: {self.closing_at}, "
+            f"Closing Day: {self.closing_day}"
         )
 
 

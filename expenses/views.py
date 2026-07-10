@@ -20,7 +20,8 @@ def get_config_values():
     return {
         "total_savings": config.total_savings if config else 0,
         "fortnightly_budget": config.fortnightly_budget if config else 7500,
-        "closing_date": config.closing_date.isoformat() if config and config.closing_date else None,
+        "closing_at": config.closing_at.isoformat() if config and config.closing_at else None,
+        "closing_day": config.closing_day.isoformat() if config and config.closing_day else None,
     }
 
 
@@ -41,7 +42,8 @@ def serialize_form_payload(config):
             "fortnightlyBudget": (
                 config.fortnightly_budget if config else 7500
             ),
-            "closingDate": config.closing_date.isoformat() if config and config.closing_date else None,
+            "closingAt": config.closing_at.isoformat() if config and config.closing_at else None,
+            "closingDay": config.closing_day.isoformat() if config and config.closing_day else None,
         },
     }
 
@@ -98,6 +100,8 @@ def serialize_expense(expense):
         "paymentMethod": str(expense.payment_method.id),
         "details": expense.details,
         "account": str(expense.account.id),
+        "createdAt": expense.created_at.isoformat() if expense.created_at else None,
+        "updatedAt": expense.updated_at.isoformat() if expense.updated_at else None,
     }
 
 
@@ -160,7 +164,8 @@ class Form(View):
 
             if "totalSavings" in body:
                 config.total_savings = int(body.get("totalSavings") or 0)
-                config.closing_date = timezone.localdate()
+                config.closing_at = timezone.now()
+                config.closing_day = timezone.localdate()
             if "fortnightlyBudget" in body:
                 config.fortnightly_budget = int(body.get("fortnightlyBudget") or 0)
 
