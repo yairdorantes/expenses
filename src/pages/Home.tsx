@@ -4,7 +4,7 @@ import SlotCounter from "react-slot-counter";
 import { ActionIcon, Button, Modal, NumberInput, Progress } from "@mantine/core";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
-import PieChartHome from "../features/Home/Components/PieChartHome";
+import CategoryExpenseBarChart from "../features/Home/Components/CategoryExpenseBarChart";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { toast } from "react-toastify";
 import { IoWalletOutline } from "react-icons/io5";
@@ -19,7 +19,7 @@ import type {
   PeriodData,
 } from "../offline/types";
 
-interface PiePiece {
+interface CategoryChartEntry {
   id: string;
 }
 
@@ -111,7 +111,7 @@ const Home = () => {
     }
   };
 
-  const handleClickPiece = (piece: PiePiece) => {
+  const handleClickPiece = (piece: CategoryChartEntry) => {
     const newData = data.movements.filter(
       (movement) => movement.category === piece.id,
     );
@@ -421,7 +421,7 @@ const Home = () => {
         </div>
       </main>
       <div className='w-full max-w-lg rounded-lg flex justify-center mx-auto border border-gray-400 overflow-hidden px-1 py-2'>
-        <PieChartHome
+        <CategoryExpenseBarChart
           handleClickPiece={handleClickPiece}
           movements={data.movements}
           reset={resetMovements}
